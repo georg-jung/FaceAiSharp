@@ -1,0 +1,75 @@
+--- Dot product 0.38 ---
+Calculated 87549528 pairs. 100,00 %
+Had 242257 pairs belonging to the same person.
+Avergage cosine distance:                   0,9912284378586707
+Avergage euclidean distance:                1,4064781837445326
+Avergage dot product:                       0,008771562156676592
+Avergage cosine distance [same person]:     0,30690925274451825
+Avergage euclidean distance [same person]:  0,7690616093633681
+Avergage dot product [same person]:         0,6930907484272285
+Avergage cosine distance [diff. person]:    0,9931272615297049
+Avergage euclidean distance [diff. person]: 1,4082468637787517
+Avergage dot product [diff. person]:        0,0068727384824336405
+P:   242257 TP:   234336 FP:     2994
+N: 87307271 TN: 87304277 FN:     7921
+Accuracy:  99,99 %
+Precision: 98,74 %
+Recall:    96,73 %
+F1 score:  0,9772
+
+--- Dot product 0.35 ---
+Calculated 87549528 pairs. 100,00 %
+Had 242257 pairs belonging to the same person.
+Avergage cosine distance:                   0,9912284378586707
+Avergage euclidean distance:                1,4064781837445326
+Avergage dot product:                       0,008771562156676592
+Avergage cosine distance [same person]:     0,30690925274451825
+Avergage euclidean distance [same person]:  0,7690616093633681
+Avergage dot product [same person]:         0,6930907484272285
+Avergage cosine distance [diff. person]:    0,9931272615297049
+Avergage euclidean distance [diff. person]: 1,4082468637787517
+Avergage dot product [diff. person]:        0,0068727384824336405
+P:   242257 TP:   234451 FP:     6477
+N: 87307271 TN: 87300794 FN:     7806
+Accuracy:  99,98 %
+Precision: 97,31 %
+Recall:    96,78 %
+F1 score:  0,9704
+
+--- Dot product 0.4 ---
+Calculated 87549528 pairs. 100,00 %
+Had 242257 pairs belonging to the same person.
+Avergage cosine distance:                   0,9912284378586707
+Avergage euclidean distance:                1,4064781837445326
+Avergage dot product:                       0,008771562156676592
+Avergage cosine distance [same person]:     0,30690925274451825
+Avergage euclidean distance [same person]:  0,7690616093633681
+Avergage dot product [same person]:         0,6930907484272285
+Avergage cosine distance [diff. person]:    0,9931272615297049
+Avergage euclidean distance [diff. person]: 1,4082468637787517
+Avergage dot product [diff. person]:        0,0068727384824336405
+P:   242257 TP:   234218 FP:     2044
+N: 87307271 TN: 87305227 FN:     8039
+Accuracy:  99,99 %
+Precision: 99,13 %
+Recall:    96,68 %
+F1 score:  0,9789
+
+--- Dot product 0.42 ---
+Calculated 87549528 pairs. 100,00 %
+Had 242257 pairs belonging to the same person.
+Avergage cosine distance:                   0,9912284378586707
+Avergage euclidean distance:                1,4064781837445326
+Avergage dot product:                       0,008771562156676592
+Avergage cosine distance [same person]:     0,30690925274451825
+Avergage euclidean distance [same person]:  0,7690616093633681
+Avergage dot product [same person]:         0,6930907484272285
+Avergage cosine distance [diff. person]:    0,9931272615297049
+Avergage euclidean distance [diff. person]: 1,4082468637787517
+Avergage dot product [diff. person]:        0,0068727384824336405
+P:   242257 TP:   234022 FP:     1671
+N: 87307271 TN: 87305600 FN:     8235
+Accuracy:  99,99 %
+Precision: 99,29 %
+Recall:    96,60 %
+F1 score:  0,9793

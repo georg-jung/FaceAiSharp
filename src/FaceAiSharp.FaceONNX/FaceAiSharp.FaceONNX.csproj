@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>FaceAiSharp.FaceONNX</PackageId>
+    <RootNamespace>FaceAiSharp</RootNamespace>
+    <AssemblyName>FaceAiSharp.FaceONNX</AssemblyName>
+    <Authors>Georg Jung</Authors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FaceONNX" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FaceAiSharp\FaceAiSharp.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,20 @@
+{
+  "profiles": {
+    "Validation calc-all-dist": {
+      "commandName": "Project",
+      "commandLineArgs": "calc-all-distances"
+    },
+    "Validation calc-pairs-dist": {
+      "commandName": "Project",
+      "commandLineArgs": "calc-pairs-distances"
+    },
+    "Validation gen-embeddings": {
+      "commandName": "Project",
+      "commandLineArgs": "generate-embeddings"
+    },
+    "count-closed-eyes": {
+      "commandName": "Project",
+      "commandLineArgs": "count-closed-eyes --dataset C:\\Users\\georg\\Downloads\\Group5a"
+    }
+  }
+}
