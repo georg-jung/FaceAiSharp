@@ -44,20 +44,20 @@ public class Scrfd
         var c2 = new MemoryCache(iopts);
         _imgTensor = ScrfdDetector.CreateImageTensor(_preprocImg);
         _scrfd1 = new(
+            c1,
             new()
             {
                 ModelPath = @"C:\Users\georg\OneDrive\Dokumente\ScrfdOnnx\scrfd_2.5g_bnkps_shape640x640.onnx",
                 AutoResizeInputToModelDimensions = false,
-            },
-            c1);
+            });
 
         _scrfd2 = new(
+            c2,
             new()
             {
                 ModelPath = @"C:\Users\georg\OneDrive\Dokumente\ScrfdOnnx\scrfd_2.5g_bnkps_dyn.onnx",
                 AutoResizeInputToModelDimensions = false,
             },
-            c2,
             new()
             {
                 ExecutionMode = Microsoft.ML.OnnxRuntime.ExecutionMode.ORT_PARALLEL,
