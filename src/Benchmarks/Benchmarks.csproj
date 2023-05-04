@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FaceAiSharp\FaceAiSharp.csproj" />
+    <ProjectReference Include="..\FaceAiSharp.FaceONNX\FaceAiSharp.FaceONNX.csproj" />
   </ItemGroup>
 
 </Project>
