@@ -26,6 +26,12 @@ jobs:
         lfs: true
     - uses: dotnet/nbgv@v0.4
       id: nbgv
+    - uses: actions/cache@v1
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/Directory.Packages.props') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
     - run: dotnet restore
     - run: dotnet build --no-restore
     - run: dotnet pack --no-restore
