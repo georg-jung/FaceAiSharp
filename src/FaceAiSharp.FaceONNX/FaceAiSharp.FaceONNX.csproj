@@ -11,6 +11,7 @@
     <RootNamespace>FaceAiSharp</RootNamespace>
     <AssemblyName>FaceAiSharp.FaceONNX</AssemblyName>
     <Authors>Georg Jung</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
