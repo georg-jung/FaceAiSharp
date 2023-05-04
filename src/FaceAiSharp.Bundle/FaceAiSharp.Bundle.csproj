@@ -14,9 +14,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FaceAiSharp.Models.Scrfd.2dot5g_kps_640x640" />
-    <PackageReference Include="FaceAiSharp.Models.ArcFace.LResNet100E-IR" />
-    <PackageReference Include="FaceAiSharp.Models.OpenVino.open-closed-eye-0001" />
+    <PackageReference Include="FaceAiSharp.Models.Scrfd.2dot5g_kps_640x640" PrivateAssets="none" />
+    <PackageReference Include="FaceAiSharp.Models.ArcFace.LResNet100E-IR" PrivateAssets="none" />
+    <PackageReference Include="FaceAiSharp.Models.OpenVino.open-closed-eye-0001" PrivateAssets="none" />
   </ItemGroup>
 
   <ItemGroup>
