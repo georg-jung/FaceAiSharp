@@ -8,6 +8,8 @@ on:
         type: string
   workflow_dispatch:
   push:
+  schedule: # for CodeQL
+    - cron: '30 4 1 * *' # on every month's first day at 4:30 UTC
 
 env:
   DOTNET_NOLOGO: true
@@ -18,6 +20,8 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     permissions:
+      security-events: write # for CodeQL
+      actions: read          # for CodeQL
       contents: read
     steps:
     - uses: actions/checkout@v3
@@ -26,6 +30,10 @@ jobs:
         lfs: true
     - uses: dotnet/nbgv@v0.4
       id: nbgv
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: csharp
     - run: dotnet restore
     - run: dotnet build -c Release --no-restore
     - run: dotnet pack -c Release --no-restore
@@ -33,3 +41,5 @@ jobs:
       with:
         name: nupkg
         path: bin/Packages/Release/**/*
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
