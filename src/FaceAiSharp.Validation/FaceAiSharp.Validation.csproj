@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FaceAiSharp\FaceAiSharp.csproj" />
+    <ProjectReference Include="..\FaceAiSharp.Bundle\FaceAiSharp.Bundle.csproj" />
   </ItemGroup>
 
 </Project>
