@@ -44,7 +44,7 @@
   <ItemGroup>
     <GlobalPackageReference Include="CSharpIsNullAnalyzer" Version="0.1.492" />
     <GlobalPackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" />
-    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.6.128" />
+    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.6.132" />
     <GlobalPackageReference Include="StyleCop.Analyzers.Unstable" Version="1.2.0.435" />
   </ItemGroup>
   <ItemGroup>
