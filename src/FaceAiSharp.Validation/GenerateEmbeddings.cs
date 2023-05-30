@@ -107,6 +107,12 @@ internal sealed class GenerateEmbeddings : IDisposable
         return img;
     }
 
+    private Image<Rgb24> Preprocess_Noop(string filePath)
+    {
+        var img = Image.Load<Rgb24>(filePath);
+        return img;
+    }
+
     private Image<Rgb24> Preprocess(string filePath)
     {
         var img = Image.Load<Rgb24>(filePath);
