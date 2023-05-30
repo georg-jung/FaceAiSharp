@@ -75,9 +75,15 @@ public sealed class ScrfdDetector : IFaceDetector, IDisposable
 
     public IReadOnlyCollection<FaceDetectorResult> Detect(Image image)
     {
+        var targetSize = _modelParameters.InputSize ?? new Size((int)Math.Ceiling(image.Width / 32.0) * 32, (int)Math.Ceiling(image.Height / 32.0) * 32);
+        if (Options.MaximumInputSize is Size maxSz && (targetSize.Width > maxSz.Width || targetSize.Height > maxSz.Height))
+        {
+            targetSize = maxSz;
+        }
+
         var resizeOptions = new ResizeOptions()
         {
-            Size = _modelParameters.InputSize ?? new Size((int)Math.Ceiling(image.Width / 32.0) * 32, (int)Math.Ceiling(image.Height / 32.0) * 32),
+            Size = targetSize,
             Position = AnchorPositionMode.TopLeft,
             Mode = ResizeMode.BoxPad,
             PadColor = Color.Black,
@@ -112,13 +118,13 @@ public sealed class ScrfdDetector : IFaceDetector, IDisposable
         var inputs = new List<NamedOnnxValue> { NamedOnnxValue.CreateFromTensor(_modelParameters.InputName, input) };
         using var outputs = _session.Run(inputs);
 
-        List<NDArray> scoresLst = new(3);
-        List<NDArray> bboxesLst = new(3);
-        List<NDArray> kpssLst = new(3);
+        List<NDArray> scoresLst = new(_modelParameters.Fmc);
+        List<NDArray> bboxesLst = new(_modelParameters.Fmc);
+        List<NDArray> kpssLst = new(_modelParameters.Fmc);
 
-        foreach (var stride in new[] { 8, 16, 32 })
+        foreach (var (idx, stride) in _modelParameters.FeatStrideFpn.Select((val, idx) => (idx, val)))
         {
-            var strideRes = HandleStride(stride, outputs, imgSize, _modelParameters.Batching);
+            var strideRes = HandleStride(idx, stride, outputs.ToList(), imgSize, _modelParameters.Batching);
             if (!strideRes.HasValue)
             {
                 continue;
@@ -311,12 +317,12 @@ public sealed class ScrfdDetector : IFaceDetector, IDisposable
         return np.stack(preds, axis: -1);
     }
 
-    private (NDArray Scores, NDArray Bboxes, NDArray? Kpss)? HandleStride(int stride, IReadOnlyCollection<NamedOnnxValue> outputs, Size inputSize, bool batched)
+    private (NDArray Scores, NDArray Bboxes, NDArray? Kpss)? HandleStride(int strideIndex, int stride, IReadOnlyList<NamedOnnxValue> outputs, Size inputSize, bool batched)
     {
         var thresh = Options.ConfidenceThreshold;
-        var bbox_preds = outputs.First(x => x.Name == $"bbox_{stride}").ToNDArray<float>();
-        var scores = outputs.First(x => x.Name == $"score_{stride}").ToNDArray<float>();
-        var kps_preds = outputs.FirstOrDefault(x => x.Name == $"kps_{stride}")?.ToNDArray<float>();
+        var scores = outputs[strideIndex].ToNDArray<float>();
+        var bbox_preds = outputs[strideIndex + _modelParameters.Fmc].ToNDArray<float>();
+        var kps_preds = outputs.ElementAtOrDefault(strideIndex + (_modelParameters.Fmc * 2))?.ToNDArray<float>();
 
         if (batched)
         {
@@ -328,11 +334,7 @@ public sealed class ScrfdDetector : IFaceDetector, IDisposable
         bbox_preds *= stride;
         kps_preds = kps_preds is not null ? kps_preds * stride : null;
 
-        var height = inputSize.Height / stride;
-        var width = inputSize.Width / stride;
-        var k = height * width;
-
-        var anchorCenters = GetAnchorCenters(inputSize, stride, 2);
+        var anchorCenters = GetAnchorCenters(inputSize, stride, _modelParameters.NumAnchors);
 
         // this is >= in python but > here
         var pos_inds = IndicesOfElementsLargerThen(scores, thresh);
@@ -375,10 +377,34 @@ public sealed class ScrfdDetector : IFaceDetector, IDisposable
 
         var firstOutput = _session.OutputMetadata.Values.First();
         var batched = firstOutput.Dimensions.Length == 3;
-        return new(inputSize, inputName, batched);
+        if (batched)
+        {
+            throw new NotImplementedException("Batched models are not supported at this time.");
+        }
+
+        var (fmc, stridesFpn, kps, numAnchors) = _session.OutputMetadata.Values.Count() switch
+        {
+            6 => (3, new[] { 8, 16, 32 }, false, 2),
+            9 => (3, new[] { 8, 16, 32 }, true, 2),
+            10 => (5, new[] { 8, 16, 32, 64, 128 }, false, 1),
+            15 => (5, new[] { 8, 16, 32, 64, 128 }, true, 1),
+            int cnt => throw new NotSupportedException($"{cnt} output tensors are not supported for SCRFD models."),
+        };
+
+        return new(inputSize, inputName, batched, fmc, stridesFpn, kps, numAnchors);
     }
 
-    private readonly record struct ModelParameters(Size? InputSize, string InputName, bool Batching);
+    /// <summary>
+    /// Loosely on https://github.com/deepinsight/insightface/blob/e8c33fc91f60c28f088415864df9d200e11c4c30/python-package/insightface/model_zoo/scrfd.py#L88.
+    /// </summary>
+    /// <param name="InputSize">Input dimensions.</param>
+    /// <param name="InputName">Name of the input tensor.</param>
+    /// <param name="Batching">True if the model supports batching.</param>
+    /// <param name="Fmc">Probably "Feature Map Count", referring to the number of feature maps produced by the model.</param>
+    /// <param name="FeatStrideFpn">Probably "Feature Stride Feature Pyramid Network", referring to the stride of the feature pyramid network.</param>
+    /// <param name="SupportsKps">True if the model supports facial landmarks.</param>
+    /// <param name="NumAnchors">Number of anchors.</param>
+    private readonly record struct ModelParameters(Size? InputSize, string InputName, bool Batching, int Fmc, int[] FeatStrideFpn, bool SupportsKps, int NumAnchors);
 }
 
 public record ScrfdDetectorOptions
@@ -397,4 +423,6 @@ public record ScrfdDetectorOptions
     public float NonMaxSupressionThreshold { get; set; } = 0.4f;
 
     public float ConfidenceThreshold { get; set; } = 0.5f;
+
+    public Size? MaximumInputSize { get; set; } = new(1024, 1024);
 }
