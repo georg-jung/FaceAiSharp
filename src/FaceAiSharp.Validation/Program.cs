@@ -30,7 +30,7 @@ var arcfaceModel = new Option<FileInfo>(
 
 var scrfdModel = new Option<FileInfo>(
     name: "--scrfd-model",
-    getDefaultValue: () => new FileInfo(@"C:\Users\georg\OneDrive\Dokumente\BlazorFace\ScrfdOnnx\scrfd_10g_bnkps.onnx"));
+    getDefaultValue: () => new FileInfo(@"C:\Users\georg\OneDrive\Dokumente\BlazorFace\ScrfdOnnx\scrfd_2.5g_bnkps.onnx"));
 
 var eyeStateModel = new Option<FileInfo>(
     name: "--eyestate-model",
