@@ -223,7 +223,7 @@ public sealed class ArcFaceEmbeddingsGenerator : IFaceEmbeddingsGenerator, IDisp
             (landmarks[3], ExpectedLandmarkPositionsInsightface[3]),
             (landmarks[4], ExpectedLandmarkPositionsInsightface[4]),
         };
-        var m = estimate.EstimateSimilarityMatrix();
+        var m = estimate.EstimateAffinityMatrix();
         return m;
     }
 

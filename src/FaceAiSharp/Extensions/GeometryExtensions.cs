@@ -214,7 +214,7 @@ public static class GeometryExtensions
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1312:Variable names should begin with lower-case letter", Justification = "Math")]
-    internal static Matrix3x2 EstimateSimilarityMatrix(this IReadOnlyList<(PointF A, PointF B)> points)
+    internal static Matrix3x2 EstimateAffinityMatrix(this IReadOnlyList<(PointF A, PointF B)> points)
     {
         // adapted from https://stackoverflow.com/a/65739116/1200847
         var rows = points.Count * 2;
@@ -239,12 +239,12 @@ public static class GeometryExtensions
 
         var x = A.Solve(b);
         var affine = new Matrix3x2(
-            (float)x[0, 0],
-            (float)x[3, 0],
-            (float)x[1, 0],
-            (float)x[4, 0],
-            (float)x[2, 0],
-            (float)x[5, 0]);
+            x[0, 0],
+            x[3, 0],
+            x[1, 0],
+            x[4, 0],
+            x[2, 0],
+            x[5, 0]);
 
         return affine;
     }
