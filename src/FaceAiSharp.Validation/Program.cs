@@ -44,7 +44,11 @@ var binJpegs = new Option<DirectoryInfo>(
     name: "--bin-jpegs");
 binJpegs.IsRequired = true;
 
-var generateEmbeddings = new Command("generate-embeddings") { dataset, arcfaceModel, scrfdModel, dbEmbeddingCollectionName, pairsFile };
+var preprocMode = new Option<GenerateEmbeddings.PreprocessingMode>(
+    name: "--prprocessing-mode",
+    getDefaultValue: () => GenerateEmbeddings.PreprocessingMode.AffineTransform);
+
+var generateEmbeddings = new Command("generate-embeddings") { dataset, arcfaceModel, scrfdModel, dbEmbeddingCollectionName, pairsFile, preprocMode };
 
 var calcAllDistances = new Command("calc-all-distances") { dbEmbeddingCollectionName, threshold };
 
@@ -57,11 +61,11 @@ var renameModelzooBinJpegs = new Command("rename-modelzoo-bin-jpegs") { binJpegs
 #pragma warning disable SA1116 // Split parameters should start on line after declaration
 #pragma warning disable SA1117 // Parameters should be on same line or separate lines
 
-generateEmbeddings.SetHandler(async (dataset, db, arcfaceModel, scrfdModel, dbEmbeddingCollectionName, pairsFile) =>
+generateEmbeddings.SetHandler(async (dataset, db, arcfaceModel, scrfdModel, dbEmbeddingCollectionName, pairsFile, preprocMode) =>
 {
-    using var cmd = new GenerateEmbeddings(dataset, db, arcfaceModel, scrfdModel, dbEmbeddingCollectionName, pairsFile);
+    using var cmd = new GenerateEmbeddings(dataset, db, arcfaceModel, scrfdModel, dbEmbeddingCollectionName, pairsFile, preprocMode);
     await cmd.Invoke();
-}, dataset, db, arcfaceModel, scrfdModel, dbEmbeddingCollectionName, pairsFile);
+}, dataset, db, arcfaceModel, scrfdModel, dbEmbeddingCollectionName, pairsFile, preprocMode);
 rc.AddCommand(generateEmbeddings);
 
 calcAllDistances.SetHandler((db, dbEmbeddingCollectionName, threshold) =>
