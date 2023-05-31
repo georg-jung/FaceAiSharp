@@ -126,10 +126,19 @@ internal class CalculatePairsDistances
 
 #pragma warning disable SA1503 // Braces should not be omitted
             if (dotProd > threshold && sameIdnt) tp++;
-            if (dotProd > threshold && !sameIdnt) fp++;
-            if (dotProd <= threshold && sameIdnt) fn++;
             if (dotProd <= threshold && !sameIdnt) tn++;
 #pragma warning restore SA1503 // Braces should not be omitted
+            if (dotProd > threshold && !sameIdnt)
+            {
+                fp++;
+                Console.WriteLine($"FP:\t{pair.Identity1}\t{pair.ImageNumber1}\t{pair.Identity2}\t{pair.ImageNumber2}\t{dotProd}");
+            }
+
+            if (dotProd <= threshold && sameIdnt)
+            {
+                fn++;
+                Console.WriteLine($"FN:\t{pair.Identity1}\t{pair.ImageNumber1}\t{pair.Identity2 ?? pair.Identity1}\t{pair.ImageNumber2}\t{dotProd}");
+            }
 
             cnt++;
         }
