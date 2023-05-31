@@ -424,5 +424,5 @@ public record ScrfdDetectorOptions
 
     public float ConfidenceThreshold { get; set; } = 0.5f;
 
-    public Size? MaximumInputSize { get; set; } = new(1024, 1024);
+    public Size? MaximumInputSize { get; set; } = new(640, 640);
 }
