@@ -78,7 +78,10 @@ internal class CountClosedEyes
                 var dist = leye.EuclideanDistance(reye);
                 var squareAroundEyeLen = dist / 3;
 
-                if (squareAroundEyeLen < 8) continue;
+                if (squareAroundEyeLen < 8)
+                {
+                    continue;
+                }
 
                 var eyeRectSz = new Size((int)squareAroundEyeLen * 2);
                 leye.Offset(-squareAroundEyeLen, -squareAroundEyeLen);

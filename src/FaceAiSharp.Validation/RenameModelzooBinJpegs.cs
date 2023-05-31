@@ -35,7 +35,7 @@ internal sealed class RenameModelzooBinJpegs
         foreach (var defPair in pairs)
         {
             var leftFile = Path.Combine(fld, $"{cnt * 2:D5}.jpg");
-            var rightFile = Path.Combine(fld, $"{cnt * 2 + 1:D5}.jpg");
+            var rightFile = Path.Combine(fld, $"{(cnt * 2) + 1:D5}.jpg");
             var fldLeft = Path.Combine(fld, defPair.Identity1);
             string id2 = defPair.SameIdentity ? defPair.Identity1 : defPair.Identity2!;
             var fldRight = Path.Combine(fld, id2);
@@ -43,7 +43,7 @@ internal sealed class RenameModelzooBinJpegs
             Directory.CreateDirectory(fldRight);
 
             var leftNew = Path.Combine(fldLeft, defPair.Identity1 + $"_{defPair.ImageNumber1:D4}.jpg");
-            var rightNew = Path.Combine(fldRight, id2 + $"_{defPair.ImageNumber2:D4}.jpg");;
+            var rightNew = Path.Combine(fldRight, id2 + $"_{defPair.ImageNumber2:D4}.jpg");
             File.Move(leftFile, leftNew, true);
             File.Move(rightFile, rightNew, true);
             cnt++;
