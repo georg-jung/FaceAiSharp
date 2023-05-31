@@ -97,6 +97,16 @@ public sealed class ScrfdDetector : IFaceDetector, IDisposable
         return Detect(input, img.Size(), scale);
     }
 
+    float IFaceDetector.GetFaceAlignmentAngle(IReadOnlyList<PointF> landmarks) => (float)GetFaceAlignmentAngle(landmarks);
+
+    PointF IFaceDetector.GetLeftEyeCenter(IReadOnlyList<PointF> landmarks) => GetLeftEye(landmarks);
+
+    PointF IFaceDetector.GetRightEyeCenter(IReadOnlyList<PointF> landmarks) => GetRightEye(landmarks);
+
+    public void Dispose() => _session.Dispose();
+
+    internal static DenseTensor<float> CreateImageTensor(Image<Rgb24> img) => img.ToTensor();
+
     /// <summary>
     /// Calculates the angle in which the face described by the given landmark points needs to be rotated by so that the eyes are parallel to the x-axis.
     /// </summary>
@@ -111,6 +121,69 @@ public sealed class ScrfdDetector : IFaceDetector, IDisposable
 
         var diff = re - le;
         return Math.Atan2(diff.Y, diff.X) * 180.0 / Math.PI * -1;
+    }
+
+    /// <summary>
+    /// Filter out duplicate detections (multiple boxes describing roughly the same area) using non max suppression.
+    /// </summary>
+    /// <param name="dets">All detections with their scores.</param>
+    /// <param name="thresh">Non max suppression threshold.</param>
+    /// <returns>Which detections to keep.</returns>
+    internal static List<int> NonMaxSupression(NDArray dets, float thresh)
+    {
+        var x1 = ((IArraySlice)dets[":, 0"].Data<float>()).AsSpan<float>();
+        var y1 = ((IArraySlice)dets[":, 1"].Data<float>()).AsSpan<float>();
+        var x2 = ((IArraySlice)dets[":, 2"].Data<float>()).AsSpan<float>();
+        var y2 = ((IArraySlice)dets[":, 3"].Data<float>()).AsSpan<float>();
+
+        int len = x1.Length;
+        var p = SimdOps<float>.Subtract(x2, x1);
+        var q = SimdOps<float>.Subtract(y2, y1);
+        SimdOps<float>.Add(p, 1f, p);
+        SimdOps<float>.Add(q, 1f, q);
+        var areasArr = SimdOps<float>.Multiply(p, q);
+        var areas = areasArr.AsSpan();
+
+        var discard = new int[len];
+        var pivot_discard = new int[len];
+        var xx1 = new float[len];
+        var xx2 = new float[len];
+        var yy1 = new float[len];
+        var yy2 = new float[len];
+        var keep = new List<int>(len);
+        for (var i = 0; i < len; i++)
+        {
+            if (discard[i] != 0)
+            {
+                continue;
+            }
+
+            keep.Add(i);
+
+            var (i_x1, i_x2, i_y1, i_y2, i_area) = (x1[i], x2[i], y1[i], y2[i], areas[i]);
+            ElementwiseMax.Max(x1, i_x1, xx1);
+            ElementwiseMax.Max(y1, i_y1, yy1);
+            ElementwiseMin.Min(x2, i_x2, xx2);
+            ElementwiseMin.Min(y2, i_y2, yy2);
+
+            SimdOps<float>.Subtract(xx2, xx1, xx1);
+            SimdOps<float>.Add(xx1, 1f, xx1);
+            ElementwiseMax.Max(xx1, 0f, xx1); // xx1 = w
+
+            SimdOps<float>.Subtract(yy2, yy1, yy1);
+            SimdOps<float>.Add(yy1, 1f, yy1);
+            ElementwiseMax.Max(yy1, 0f, yy1); // yy1 = h
+
+            SimdOps<float>.Multiply(xx1, yy1, xx1); // xx1 = inter
+            SimdOps<float>.Add(areas, i_area, yy1);
+            SimdOps<float>.Subtract(yy1, xx1, yy1); // yy1 = (areas[i] + areas[order["1:"]] - inter)
+            SimdOps<float>.Divide(xx1, yy1, xx1); // xx1 = ovr = inter / (areas[i] + areas[order["1:"]] - inter)
+
+            ElementwiseGreater.Greater(xx1, thresh, pivot_discard);
+            SimdOps<int>.Add(discard, pivot_discard, discard);
+        }
+
+        return keep;
     }
 
     internal IReadOnlyCollection<FaceDetectorResult> Detect(DenseTensor<float> input, Size imgSize, float scale)
@@ -190,79 +263,6 @@ public sealed class ScrfdDetector : IFaceDetector, IDisposable
         {
             return det.GetNDArrays(0).Select(ToReturnType).ToList();
         }
-    }
-
-    float IFaceDetector.GetFaceAlignmentAngle(IReadOnlyList<PointF> landmarks) => (float)GetFaceAlignmentAngle(landmarks);
-
-    PointF IFaceDetector.GetLeftEyeCenter(IReadOnlyList<PointF> landmarks) => GetLeftEye(landmarks);
-
-    PointF IFaceDetector.GetRightEyeCenter(IReadOnlyList<PointF> landmarks) => GetRightEye(landmarks);
-
-    public void Dispose() => _session.Dispose();
-
-    internal static DenseTensor<float> CreateImageTensor(Image<Rgb24> img) => img.ToTensor();
-
-    /// <summary>
-    /// Filter out duplicate detections (multiple boxes describing roughly the same area) using non max suppression.
-    /// </summary>
-    /// <param name="dets">All detections with their scores.</param>
-    /// <param name="thresh">Non max suppression threshold.</param>
-    /// <returns>Which detections to keep.</returns>
-    internal static List<int> NonMaxSupression(NDArray dets, float thresh)
-    {
-        var x1 = ((IArraySlice)dets[":, 0"].Data<float>()).AsSpan<float>();
-        var y1 = ((IArraySlice)dets[":, 1"].Data<float>()).AsSpan<float>();
-        var x2 = ((IArraySlice)dets[":, 2"].Data<float>()).AsSpan<float>();
-        var y2 = ((IArraySlice)dets[":, 3"].Data<float>()).AsSpan<float>();
-
-        int len = x1.Length;
-        var p = SimdOps<float>.Subtract(x2, x1);
-        var q = SimdOps<float>.Subtract(y2, y1);
-        SimdOps<float>.Add(p, 1f, p);
-        SimdOps<float>.Add(q, 1f, q);
-        var areasArr = SimdOps<float>.Multiply(p, q);
-        var areas = areasArr.AsSpan();
-
-        var discard = new int[len];
-        var pivot_discard = new int[len];
-        var xx1 = new float[len];
-        var xx2 = new float[len];
-        var yy1 = new float[len];
-        var yy2 = new float[len];
-        var keep = new List<int>(len);
-        for (var i = 0; i < len; i++)
-        {
-            if (discard[i] != 0)
-            {
-                continue;
-            }
-
-            keep.Add(i);
-
-            var (i_x1, i_x2, i_y1, i_y2, i_area) = (x1[i], x2[i], y1[i], y2[i], areas[i]);
-            ElementwiseMax.Max(x1, i_x1, xx1);
-            ElementwiseMax.Max(y1, i_y1, yy1);
-            ElementwiseMin.Min(x2, i_x2, xx2);
-            ElementwiseMin.Min(y2, i_y2, yy2);
-
-            SimdOps<float>.Subtract(xx2, xx1, xx1);
-            SimdOps<float>.Add(xx1, 1f, xx1);
-            ElementwiseMax.Max(xx1, 0f, xx1); // xx1 = w
-
-            SimdOps<float>.Subtract(yy2, yy1, yy1);
-            SimdOps<float>.Add(yy1, 1f, yy1);
-            ElementwiseMax.Max(yy1, 0f, yy1); // yy1 = h
-
-            SimdOps<float>.Multiply(xx1, yy1, xx1); // xx1 = inter
-            SimdOps<float>.Add(areas, i_area, yy1);
-            SimdOps<float>.Subtract(yy1, xx1, yy1); // yy1 = (areas[i] + areas[order["1:"]] - inter)
-            SimdOps<float>.Divide(xx1, yy1, xx1); // xx1 = ovr = inter / (areas[i] + areas[order["1:"]] - inter)
-
-            ElementwiseGreater.Greater(xx1, thresh, pivot_discard);
-            SimdOps<int>.Add(discard, pivot_discard, discard);
-        }
-
-        return keep;
     }
 
     private static NDArray GenerateAnchorCenters(Size inputSize, int stride, int numAnchors)
