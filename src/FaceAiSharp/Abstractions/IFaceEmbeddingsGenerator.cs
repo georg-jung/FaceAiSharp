@@ -23,5 +23,16 @@ public interface IFaceEmbeddingsGenerator
     ///     An embedding vector (in a high-dimensional space) that represents the unique features of the given face. This vector can be
     ///     compared with others to determine if multiple faces belong to the same person.
     /// </returns>
-    public float[] GenerateEmbedding(Image<Rgb24> alignedFace);
+    float[] GenerateEmbedding(Image<Rgb24> alignedFace);
+
+    /// <summary>
+    ///     Aligns the given face image based on the provided facial landmarks. Alignment is specific to the model used for implementation.
+    ///     This method operates in-place and thus modifies the given image.
+    /// </summary>
+    /// <param name="face">The image of the face to be aligned. The given image will be mutated.</param>
+    /// <param name="landmarks">
+    ///     A read-only list of points representing facial landmarks. These landmarks usually include the coordinates of features like eyes,
+    ///     nose, mouth, etc. Which landmarks are expected in which order depends on the implementation.
+    /// </param>
+    void AlignFaceUsingLandmarks(Image<Rgb24> face, IReadOnlyList<PointF> landmarks);
 }

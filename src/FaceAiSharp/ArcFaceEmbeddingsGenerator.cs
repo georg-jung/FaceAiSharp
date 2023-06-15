@@ -121,14 +121,22 @@ public sealed class ArcFaceEmbeddingsGenerator : IFaceEmbeddingsGenerator, IDisp
     public ArcFaceEmbeddingsGeneratorOptions Options { get; }
 
     /// <summary>
-    /// Transform and crop the given image in the way ArcFace was trained.
+    /// Align the given image in the way ArcFace was trained. Applies an affine transformation to move the
+    /// facial landmark points to expected positions. This method operates in-place and thus modifies the given image.
     /// </summary>
-    /// <param name="face">Image containing the face. The given image will be mutated.</param>
-    /// <param name="landmarks">5 facial landmark points.</param>
+    /// <param name="face">The image of the face to be aligned. The given image will be mutated.</param>
+    /// <param name="landmarks">
+    /// Five facial landmark points. In this order:
+    /// - left eye center
+    /// - right eye center
+    /// - nose tip
+    /// - left mouth corner
+    /// - right mouth corner.
+    /// </param>
     /// <param name="edgeSize">
     ///     ArcFace typically expects 112x112 inputs. Specifying another edge size might be useful for
     ///     custom models or to manually analyze the resulting aligned faces.</param>
-    public static void AlignUsingFacialLandmarks(Image face, IReadOnlyList<PointF> landmarks, int edgeSize = 112)
+    public static void AlignFaceUsingLandmarks(Image<Rgb24> face, IReadOnlyList<PointF> landmarks, int edgeSize = 112)
     {
         var cutRect = new Rectangle(0, 0, edgeSize, edgeSize);
         var m = EstimateAffineAlignmentMatrix(landmarks);
@@ -172,6 +180,8 @@ public sealed class ArcFaceEmbeddingsGenerator : IFaceEmbeddingsGenerator, IDisp
             SafeCrop(op, cutRect);
         });
     }
+
+    void IFaceEmbeddingsGenerator.AlignFaceUsingLandmarks(Image<Rgb24> face, IReadOnlyList<PointF> landmarks) => AlignFaceUsingLandmarks(face, landmarks);
 
     public void Dispose() => _session.Dispose();
 

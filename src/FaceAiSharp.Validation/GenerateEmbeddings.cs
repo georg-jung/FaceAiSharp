@@ -168,7 +168,7 @@ internal sealed class GenerateEmbeddings : IDisposable
         var imgCenter = RectangleF.Center(img.Bounds());
         var middleFace = dets.MinBy(x => RectangleF.Center(x.Box).EuclideanDistance(imgCenter));
         Debug.Assert(middleFace.Landmarks != null, "No landmarks detected but required");
-        ArcFaceEmbeddingsGenerator.AlignUsingFacialLandmarks(img, middleFace.Landmarks);
+        _emb.AlignFaceUsingLandmarks(img, middleFace.Landmarks);
         return img;
     }
 

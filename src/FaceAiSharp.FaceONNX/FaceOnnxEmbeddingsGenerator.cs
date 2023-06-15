@@ -19,4 +19,6 @@ public sealed class FaceOnnxEmbeddingsGenerator : IFaceEmbeddingsGenerator, IDis
         var res = _fonnx.Forward(img);
         return res;
     }
+
+    void IFaceEmbeddingsGenerator.AlignFaceUsingLandmarks(Image<Rgb24> face, IReadOnlyList<PointF> landmarks) => throw new NotImplementedException();
 }
