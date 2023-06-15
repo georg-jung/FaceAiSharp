@@ -17,16 +17,16 @@
     <PackageVersion Include="Humanizer.Core" Version="2.14.1" />
     <PackageVersion Include="MathNet.Numerics" Version="5.0.0" />
     <PackageVersion Include="LiteDB" Version="5.0.16" />
-    <PackageVersion Include="Microsoft.AI.DirectML" Version="1.11.0" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.5.0" />
+    <PackageVersion Include="Microsoft.AI.DirectML" Version="1.12.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.6.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
-    <PackageVersion Include="Microsoft.CodeCoverage" Version="17.5.0" />
+    <PackageVersion Include="Microsoft.CodeCoverage" Version="17.6.2" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
-    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.14.1" />
-    <PackageVersion Include="Microsoft.ML.OnnxRuntime.Managed" Version="1.14.1" />
-    <PackageVersion Include="Microsoft.ML.OnnxRuntime.DirectML" Version="1.14.1" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
+    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.15.0" />
+    <PackageVersion Include="Microsoft.ML.OnnxRuntime.Managed" Version="1.15.0" />
+    <PackageVersion Include="Microsoft.ML.OnnxRuntime.DirectML" Version="1.15.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.6.2" />
     <PackageVersion Include="NodaTime" Version="3.1.9" />
     <PackageVersion Include="NumSharp" Version="0.30.0" />
     <PackageVersion Include="SimpleSIMD" Version="3.3.1" />
@@ -38,13 +38,13 @@
     <PackageVersion Include="UMAP" Version="1.0.34015" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5" />
     <PackageVersion Include="xunit" Version="2.4.2" />
-    <PackageVersion Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.1" />
+    <PackageVersion Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.2" />
     <PackageVersion Include="coverlet.collector" Version="3.2.0" />
   </ItemGroup>
   <ItemGroup>
-    <GlobalPackageReference Include="CSharpIsNullAnalyzer" Version="0.1.492" />
+    <GlobalPackageReference Include="CSharpIsNullAnalyzer" Version="0.1.495" />
     <GlobalPackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" />
-    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.6.128" />
+    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.6.133" />
     <GlobalPackageReference Include="StyleCop.Analyzers.Unstable" Version="1.2.0.435" />
   </ItemGroup>
   <ItemGroup>
