@@ -4,7 +4,6 @@
 using System.Numerics;
 using BenchmarkDotNet.Attributes;
 using FaceAiSharp;
-using FaceAiSharp.Abstractions;
 using FaceAiSharp.Extensions;
 using FaceONNX;
 using Microsoft.Extensions.Caching.Memory;

@@ -1,7 +1,6 @@
 // Copyright (c) Georg Jung. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using FaceAiSharp.Abstractions;
 using FaceAiSharp.Extensions;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -14,7 +13,7 @@ public sealed class FaceOnnxEmbeddingsGenerator : IFaceEmbeddingsGenerator, IDis
 
     public void Dispose() => _fonnx.Dispose();
 
-    public float[] Generate(Image<Rgb24> alignedFace)
+    public float[] GenerateEmbedding(Image<Rgb24> alignedFace)
     {
         var img = alignedFace.ToFaceOnnxFloatArray();
         var res = _fonnx.Forward(img);

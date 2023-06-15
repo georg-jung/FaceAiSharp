@@ -65,7 +65,7 @@ internal class CountClosedEyes
         {
             using var img = Image.Load<Rgb24>(file.FullName);
             var sw = Stopwatch.StartNew();
-            var x = _det.Detect(img);
+            var x = _det.DetectFaces(img);
             detTicks += sw.ElapsedTicks;
             int open = 0;
             int closed = 0;
@@ -73,8 +73,8 @@ internal class CountClosedEyes
             {
                 faces++;
                 var lmrks = face.Landmarks ?? throw new InvalidOperationException();
-                var angle = ScrfdDetector.GetFaceAlignmentAngle(lmrks);
                 var (leye, reye) = (ScrfdDetector.GetLeftEye(lmrks), ScrfdDetector.GetRightEye(lmrks));
+                var angle = GeometryExtensions.GetAlignmentAngle(leye, reye);
                 var dist = leye.EuclideanDistance(reye);
                 var squareAroundEyeLen = dist / 3;
 
@@ -88,8 +88,8 @@ internal class CountClosedEyes
                 reye.Offset(-squareAroundEyeLen, -squareAroundEyeLen);
                 var leyeRect = new Rectangle(Point.Round(leye), eyeRectSz);
                 var reyeRect = new Rectangle(Point.Round(reye), eyeRectSz);
-                var leyeImg = img.CropAligned(leyeRect, (float)angle, 32);
-                var reyeImg = img.CropAligned(reyeRect, (float)angle, 32);
+                var leyeImg = img.CropAligned(leyeRect, angle, 32);
+                var reyeImg = img.CropAligned(reyeRect, angle, 32);
 
                 sw.Restart();
                 var leftOpen = _eyeState.IsOpen(leyeImg);

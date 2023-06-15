@@ -1,7 +1,6 @@
 // Copyright (c) Georg Jung. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using FaceAiSharp.Abstractions;
 using FaceAiSharp.Extensions;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -20,7 +19,7 @@ public static class Applications
     /// <returns>The number of faces that have been blurred.</returns>
     public static int BlurFaces(this IFaceDetector detector, Image<Rgb24> input, float blurSigmaFactor = 10f)
     {
-        var res = detector.Detect(input);
+        var res = detector.DetectFaces(input);
         var cnt = 0;
         input.Mutate(op =>
         {
@@ -39,7 +38,7 @@ public static class Applications
 
     public static void CropProfilePicture(this IFaceDetector detector, Image<Rgb24> input, int? maxEdgeSize = 640, float scaleFactor = 1.35f)
     {
-        var res = detector.Detect(input);
+        var res = detector.DetectFaces(input);
         if (res.Count == 0)
         {
             throw new ArgumentException("No faces could be found in the given image", nameof(input));
@@ -50,9 +49,10 @@ public static class Applications
         r = r.ScaleCentered(scaleFactor);
         r.Intersect(input.Bounds());
         var angl = 0.0f;
-        if (maxFace.Landmarks is not null)
+        if (maxFace.Landmarks is not null && detector is IFaceDetectorWithLandmarks lmdet)
         {
-            angl = detector.GetFaceAlignmentAngle(maxFace.Landmarks);
+            var (leye, reye) = (lmdet.GetLeftEyeCenter(maxFace.Landmarks), lmdet.GetRightEyeCenter(maxFace.Landmarks));
+            angl = leye.GetAlignmentAngle(reye);
         }
 
         input.Mutate(op =>
@@ -69,7 +69,7 @@ public static class Applications
     /// <returns>The number of faces found.</returns>
     public static int CountFaces(this IFaceDetector detector, Image<Rgb24> input)
     {
-        var res = detector.Detect(input);
+        var res = detector.DetectFaces(input);
         return res.Count;
     }
 
@@ -91,18 +91,18 @@ public static class Applications
     ///     Thrown if the face detections by <paramref name="detector"/>
     ///     do not include facial landmarks.
     /// </exception>
-    public static (int Faces, int OpenEyes, int ClosedEyes) CountEyeStates(this IFaceDetector detector, IEyeStateDetector eyeStateDetector, Image<Rgb24> input, float eyeDistanceDivisor = 3)
+    public static (int Faces, int OpenEyes, int ClosedEyes) CountEyeStates(this IFaceDetectorWithLandmarks detector, IEyeStateDetector eyeStateDetector, Image<Rgb24> input, float eyeDistanceDivisor = 3)
     {
-        var dets = detector.Detect(input);
+        var dets = detector.DetectFaces(input);
         var open = 0;
         var closed = 0;
         foreach (var det in dets)
         {
             var lmrks = det.Landmarks
                 ?? throw new InvalidOperationException("Facial landmarks are required but not given for all faces found.");
-            var angle = detector.GetFaceAlignmentAngle(lmrks);
             var leye = detector.GetLeftEyeCenter(lmrks);
             var reye = detector.GetRightEyeCenter(lmrks);
+            var angle = leye.GetAlignmentAngle(reye);
             var bx = ImageCalculations.GetEyeBoxesFromCenterPoints(leye, reye, eyeDistanceDivisor);
 
             if (Math.Min(bx.Left.Width, bx.Right.Width) < 16)

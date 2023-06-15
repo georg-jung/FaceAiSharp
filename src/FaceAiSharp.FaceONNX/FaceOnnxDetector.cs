@@ -1,9 +1,9 @@
 // Copyright (c) Georg Jung. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using FaceAiSharp.Abstractions;
 using FaceAiSharp.Extensions;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace FaceAiSharp;
 
@@ -20,7 +20,7 @@ public sealed class FaceOnnxDetector : IFaceDetector, IDisposable
 
     public void Dispose() => _faceDetector.Dispose();
 
-    public IReadOnlyCollection<FaceDetectorResult> Detect(Image image)
+    public IReadOnlyCollection<FaceDetectorResult> DetectFaces(Image<Rgb24> image)
     {
         _faceDetector.ConfidenceThreshold = ConfidenceThreshold;
         _faceDetector.NmsThreshold = NmsThreshold;
@@ -34,10 +34,4 @@ public sealed class FaceOnnxDetector : IFaceDetector, IDisposable
 
         return res.Select(ToReturnType).ToList();
     }
-
-    float IFaceDetector.GetFaceAlignmentAngle(IReadOnlyList<PointF> landmarks) => throw new NotSupportedException();
-
-    PointF IFaceDetector.GetLeftEyeCenter(IReadOnlyList<PointF> landmarks) => throw new NotImplementedException();
-
-    PointF IFaceDetector.GetRightEyeCenter(IReadOnlyList<PointF> landmarks) => throw new NotImplementedException();
 }

@@ -1,19 +1,6 @@
 // Copyright (c) Georg Jung. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.CommandLine;
-using System.Data;
-using System.Diagnostics;
-using System.Threading.Channels;
-using FaceAiSharp.Abstractions;
-using FaceAiSharp.Extensions;
-using LiteDB;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
-using Microsoft.ML.OnnxRuntime;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-
 namespace FaceAiSharp.Validation;
 
 internal sealed class RenameModelzooBinJpegs

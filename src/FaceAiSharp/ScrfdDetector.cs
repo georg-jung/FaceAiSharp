@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Runtime.CompilerServices;
-using FaceAiSharp.Abstractions;
 using FaceAiSharp.Extensions;
 using FaceAiSharp.Simd;
 using Microsoft.Extensions.Caching.Memory;
@@ -17,7 +16,7 @@ using SixLabors.ImageSharp.Processing;
 
 namespace FaceAiSharp;
 
-public sealed class ScrfdDetector : IFaceDetector, IDisposable
+public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
 {
     private readonly InferenceSession _session;
     private readonly ModelParameters _modelParameters;
@@ -73,7 +72,7 @@ public sealed class ScrfdDetector : IFaceDetector, IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static PointF GetMouthRight(IReadOnlyList<PointF> landmarks) => landmarks[4];
 
-    public IReadOnlyCollection<FaceDetectorResult> Detect(Image image)
+    public IReadOnlyCollection<FaceDetectorResult> DetectFaces(Image<Rgb24> image)
     {
         var targetSize = _modelParameters.InputSize ?? new Size((int)Math.Ceiling(image.Width / 32.0) * 32, (int)Math.Ceiling(image.Height / 32.0) * 32);
         if (Options.MaximumInputSize is Size maxSz && (targetSize.Width > maxSz.Width || targetSize.Height > maxSz.Height))
@@ -97,31 +96,15 @@ public sealed class ScrfdDetector : IFaceDetector, IDisposable
         return Detect(input, img.Size(), scale);
     }
 
-    float IFaceDetector.GetFaceAlignmentAngle(IReadOnlyList<PointF> landmarks) => (float)GetFaceAlignmentAngle(landmarks);
+    IReadOnlyList<PointF> IFaceLandmarksDetector.DetectLandmarks(Image<Rgb24> image) => DetectFaces(image).MaxBy(x => x.Confidence).Landmarks!;
 
-    PointF IFaceDetector.GetLeftEyeCenter(IReadOnlyList<PointF> landmarks) => GetLeftEye(landmarks);
+    PointF IFaceLandmarksDetector.GetLeftEyeCenter(IReadOnlyList<PointF> landmarks) => GetLeftEye(landmarks);
 
-    PointF IFaceDetector.GetRightEyeCenter(IReadOnlyList<PointF> landmarks) => GetRightEye(landmarks);
+    PointF IFaceLandmarksDetector.GetRightEyeCenter(IReadOnlyList<PointF> landmarks) => GetRightEye(landmarks);
 
     public void Dispose() => _session.Dispose();
 
     internal static DenseTensor<float> CreateImageTensor(Image<Rgb24> img) => img.ToTensor();
-
-    /// <summary>
-    /// Calculates the angle in which the face described by the given landmark points needs to be rotated by so that the eyes are parallel to the x-axis.
-    /// </summary>
-    /// <param name="landmarks">Landmark points as calculated by an instance of this class.</param>
-    /// <returns>The angle the face needs to be rotated by.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static double GetFaceAlignmentAngle(IReadOnlyList<PointF> landmarks)
-    {
-        // adapted from https://stackoverflow.com/a/12892493/1200847
-        var le = GetLeftEye(landmarks);
-        var re = GetRightEye(landmarks);
-
-        var diff = re - le;
-        return Math.Atan2(diff.Y, diff.X) * 180.0 / Math.PI * -1;
-    }
 
     /// <summary>
     /// Filter out duplicate detections (multiple boxes describing roughly the same area) using non max suppression.

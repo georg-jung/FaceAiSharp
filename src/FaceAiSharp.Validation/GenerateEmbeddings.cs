@@ -5,7 +5,6 @@ using System.CommandLine;
 using System.Data;
 using System.Diagnostics;
 using System.Threading.Channels;
-using FaceAiSharp.Abstractions;
 using FaceAiSharp.Extensions;
 using LiteDB;
 using Microsoft.Extensions.Caching.Memory;
@@ -136,19 +135,20 @@ internal sealed class GenerateEmbeddings : IDisposable
     private Image<Rgb24> PreprocessAngle(string filePath)
     {
         var img = Image.Load<Rgb24>(filePath);
-        var dets = _det.Detect(img);
+        var dets = _det.DetectFaces(img);
         var imgCenter = RectangleF.Center(img.Bounds());
         var middleFace = dets.MinBy(x => RectangleF.Center(x.Box).EuclideanDistance(imgCenter));
         Debug.Assert(middleFace.Landmarks != null, "No landmarks detected but required");
-        var angle = ScrfdDetector.GetFaceAlignmentAngle(middleFace.Landmarks);
-        img.CropAlignedDestructive(Rectangle.Round(middleFace.Box), (float)angle, 112);
+        var (leye, reye) = (ScrfdDetector.GetLeftEye(middleFace.Landmarks), ScrfdDetector.GetRightEye(middleFace.Landmarks));
+        var angle = GeometryExtensions.GetAlignmentAngle(leye, reye);
+        img.CropAlignedDestructive(Rectangle.Round(middleFace.Box), angle, 112);
         return img;
     }
 
     private Image<Rgb24> PreprocessCut(string filePath)
     {
         var img = Image.Load<Rgb24>(filePath);
-        var dets = _det.Detect(img);
+        var dets = _det.DetectFaces(img);
         var imgCenter = RectangleF.Center(img.Bounds());
         var middleFace = dets.MinBy(x => RectangleF.Center(x.Box).EuclideanDistance(imgCenter));
         img.CropAlignedDestructive(Rectangle.Round(middleFace.Box), 0, 112);
@@ -164,7 +164,7 @@ internal sealed class GenerateEmbeddings : IDisposable
     private Image<Rgb24> PreprocessAffineTransform(string filePath)
     {
         var img = Image.Load<Rgb24>(filePath);
-        var dets = _det.Detect(img);
+        var dets = _det.DetectFaces(img);
         var imgCenter = RectangleF.Center(img.Bounds());
         var middleFace = dets.MinBy(x => RectangleF.Center(x.Box).EuclideanDistance(imgCenter));
         Debug.Assert(middleFace.Landmarks != null, "No landmarks detected but required");
@@ -201,7 +201,7 @@ internal sealed class GenerateEmbeddings : IDisposable
         await foreach (var (metadata, img, ticks) in channel.ReadAllAsync())
         {
             var sw = Stopwatch.StartNew();
-            var embedding = _emb.Generate(img);
+            var embedding = _emb.GenerateEmbedding(img);
             yield return (new Embedding() with
             {
                 Identity = metadata.Identity,

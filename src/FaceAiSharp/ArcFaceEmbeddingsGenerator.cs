@@ -4,7 +4,6 @@
 using System.Diagnostics;
 using System.Numerics;
 using CommunityToolkit.Diagnostics;
-using FaceAiSharp.Abstractions;
 using FaceAiSharp.Extensions;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
@@ -176,7 +175,7 @@ public sealed class ArcFaceEmbeddingsGenerator : IFaceEmbeddingsGenerator, IDisp
 
     public void Dispose() => _session.Dispose();
 
-    public float[] Generate(Image<Rgb24> alignedFace)
+    public float[] GenerateEmbedding(Image<Rgb24> alignedFace)
     {
         alignedFace.EnsureProperlySizedDestructive(_resizeOptions, !Options.AutoResizeInputToModelDimensions);
 

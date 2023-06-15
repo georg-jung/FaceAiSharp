@@ -9,8 +9,8 @@ namespace FaceAiSharp;
 public static class ImageCalculations
 {
     /// <summary>
-    /// Calculates bounding boxes for eyes if just their center points are known. It assumes the size of the required boxes
-    /// linearly depends on the distance of the eye center points.
+    ///     Estimates bounding boxes for eyes if just their center points are known. It assumes the size of the required boxes
+    ///     linearly depends on the distance of the eye center points.
     /// </summary>
     /// <param name="leftEyeCenter">The center point of the left eye.</param>
     /// <param name="rightEyeCenter">The center point of the right eye.</param>

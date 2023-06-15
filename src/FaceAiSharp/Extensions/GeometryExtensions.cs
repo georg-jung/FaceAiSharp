@@ -286,4 +286,18 @@ public static class GeometryExtensions
     /// <param name="m">Input matrix.</param>
     /// <returns>The vertical scale factor/y axis.</returns>
     internal static float GetVScaleFactor(this Matrix3x2 m) => (float)Math.Sqrt((m.M12 * m.M12) + (m.M22 * m.M22));
+
+    /// <summary>
+    /// Calculates the angle in degrees by which an image needs to be rotated so that the line formed by the given
+    /// points (left and right) becomes horizontal, with the left point being to the left of the right point.
+    /// </summary>
+    /// <param name="left">The PointF representing the left point.</param>
+    /// <param name="right">The PointF representing the right point.</param>
+    /// <returns>The angle in degrees by which the image should be rotated to align the given points horizontally.</returns>
+    internal static float GetAlignmentAngle(this PointF left, PointF right)
+    {
+        // adapted from https://stackoverflow.com/a/12892493/1200847
+        var diff = left - right;
+        return (float)(Math.Atan2(diff.Y, diff.X) * 180.0 / Math.PI * -1);
+    }
 }
