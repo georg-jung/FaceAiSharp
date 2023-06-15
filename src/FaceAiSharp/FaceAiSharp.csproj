@@ -16,9 +16,9 @@
     <PackageTags>face;face-detection;face-recognition;scrfd;arcface;onnx;onnxruntime;ai;artificial-intelligence;ml;machine-learning;openvino;insightface;facial-landmarks-detection;eye-state-detection;eyes;lfw;widerface;face-ai</PackageTags>
     <PackageProjectUrl>https://github.com/georg-jung/FaceAiSharp</PackageProjectUrl>
     <PackageDescription>
-      FaceAiSharp allows you to work with face-related computer vision tasks easily. It currently provides face detection, face recognition, facial landmarks detection, and eye state detection functionalities. FaceAiSharp leverages publicly available pretrained ONNX models to deliver accurate and efficient results and offers a convenient way to integrate them into your .NET applications. Whether you need to find faces, recognize individuals, detect facial landmarks, or determine eye states, FaceAiSharp simplifies the process with its simple API. ONNXRuntime is used for model inference, enabling hardware acceleration were possible. All processing is done locally, with no reliance on cloud services.
+FaceAiSharp allows you to work with face-related computer vision tasks easily. It currently provides face detection, face recognition, facial landmarks detection, and eye state detection functionalities. FaceAiSharp leverages publicly available pretrained ONNX models to deliver accurate and efficient results and offers a convenient way to integrate them into your .NET applications. Whether you need to find faces, recognize individuals, detect facial landmarks, or determine eye states, FaceAiSharp simplifies the process with its simple API. ONNXRuntime is used for model inference, enabling hardware acceleration were possible. All processing is done locally, with no reliance on cloud services.
 
-      This package contains just FaceAiSharp's managed code and does not include any ONNX models. Take a look at FaceAiSharp.Bundle for a batteries-included package with everything you need to get started.
+This package contains just FaceAiSharp's managed code and does not include any ONNX models. Take a look at FaceAiSharp.Bundle for a batteries-included package with everything you need to get started.
     </PackageDescription>
   </PropertyGroup>
 
