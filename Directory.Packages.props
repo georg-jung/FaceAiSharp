@@ -39,7 +39,7 @@
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5" />
     <PackageVersion Include="xunit" Version="2.4.2" />
     <PackageVersion Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.2" />
-    <PackageVersion Include="coverlet.collector" Version="3.2.0" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.0" />
   </ItemGroup>
   <ItemGroup>
     <GlobalPackageReference Include="CSharpIsNullAnalyzer" Version="0.1.495" />
