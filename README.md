@@ -17,9 +17,76 @@ FaceAiSharp is a .NET library that allows you to work with face-related computer
 - Provides a simple and intuitive API for easy integration into your applications.
 - Cross-platform support for Windows, Linux, Android and more.
 
+## Getting Started
+
+1. Create a new console app `dotnet new console`
+2. Install two packages providing the relevant code and models:
+
+    ```shell
+    dotnet add package Microsoft.ML.OnnxRuntime
+    dotnet add package FaceAiSharp.Bundle
+    ```
+
+3. Replace the content of the Program.cs file with the following code:
+
+    ```csharp
+    using FaceAiSharp;
+    using FaceAiSharp.Extensions;
+    using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.PixelFormats;
+
+    using var hc = new HttpClient();
+    var groupPhoto = await hc.GetByteArrayAsync(
+        "https://raw.githubusercontent.com/georg-jung/FaceAiSharp/master/examples/obama_family.jpg");
+    var img = Image.Load<Rgb24>(groupPhoto);
+
+    var det = FaceAiSharpBundleFactory.CreateFaceDetectorWithLandmarks();
+    var rec = FaceAiSharpBundleFactory.CreateFaceEmbeddingsGenerator();
+
+    var faces = det.DetectFaces(img);
+
+    foreach (var face in faces)
+    {
+        Console.WriteLine($"Found a face with conficence {face.Confidence}: {face.Box}");
+    }
+
+    var first = faces.First();
+    var second = faces.Skip(1).First();
+
+    // AlignFaceUsingLandmarks is an in-place operation so we need to create a clone of img first
+    var secondImg = img.Clone();
+    rec.AlignFaceUsingLandmarks(img, first.Landmarks!);
+    rec.AlignFaceUsingLandmarks(secondImg, second.Landmarks!);
+
+    img.Save("aligned.jpg");
+    Console.WriteLine($"Saved an aligned version of one of the faces found at \"./aligned.jpg\".");
+
+    var embedding1 = rec.GenerateEmbedding(img);
+    var embedding2 = rec.GenerateEmbedding(secondImg);
+
+    var dot = embedding1.Dot(embedding2);
+
+    Console.WriteLine($"Dot product: {dot}");
+    if (dot >= 0.42)
+    {
+        Console.WriteLine("Assessment: Both pictures show the same person.");
+    }
+    else if (dot > 0.28 && dot < 0.42)
+    {
+        Console.WriteLine("Assessment: Hard to tell if the pictures show the same person.");
+    }
+    else if (dot <= 0.28)
+    {
+        Console.WriteLine("Assessment: These are two different people.");
+    }
+
+    ```
+
+4. Run the program you just created: `dotnet run`
+
 ## See FaceAiSharp in Action
 
-Try the interactive example on <https://facerec.gjung.com/> or review the code behind the app: <https://github.com/georg-jung/explain-face-rec>
+Try the interactive examples on <https://facerec.gjung.com/> or review the code behind the app: <https://github.com/georg-jung/explain-face-rec>
 
 ## Models
 
