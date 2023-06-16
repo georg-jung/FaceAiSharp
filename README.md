@@ -1,5 +1,8 @@
 # FaceAiSharp
 
+![Nuget](https://img.shields.io/nuget/v/FaceAiSharp)
+![Nuget](https://img.shields.io/nuget/v/FaceAiSharp.Bundle)
+
 FaceAiSharp is a .NET library that allows you to work with face-related computer vision tasks. It currently provides face detection, face recognition, facial landmarks detection, and eye state detection functionalities. FaceAiSharp leverages publicly available pretrained ONNX models to deliver accurate and efficient results and offers a convenient way to integrate them into your .NET applications. Whether you need to find faces, recognize individuals, detect facial landmarks, or determine eye states, FaceAiSharp simplifies the process with its simple API. ONNXRuntime is used for model inference, enabling hardware acceleration were possible.
 
 ## Features
@@ -83,6 +86,20 @@ FaceAiSharp is a .NET library that allows you to work with face-related computer
     ```
 
 4. Run the program you just created: `dotnet run`
+
+## Installation
+
+Use the `FaceAiSharp.Bundle` package if you want a bundle that includes a selection of models to enable all features FaceAiSharp offers.
+
+```pwsh
+dotnet add package FaceAiSharp.Bundle
+```
+
+Install `FaceAiSharp` instead if you want to choose the models yourself or bring your own ones.
+
+```pwsh
+dotnet add package FaceAiSharp
+```
 
 ## See FaceAiSharp in Action
 
