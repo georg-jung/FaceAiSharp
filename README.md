@@ -1,7 +1,7 @@
 # FaceAiSharp
 
-![Nuget](https://img.shields.io/nuget/v/FaceAiSharp)
-![Nuget](https://img.shields.io/nuget/v/FaceAiSharp.Bundle)
+[![Nuget](https://img.shields.io/nuget/v/FaceAiSharp?label=FaceAiSharp&logo=nuget)](https://www.nuget.org/packages/FaceAiSharp/)
+[![Nuget](https://img.shields.io/nuget/v/FaceAiSharp.Bundle?label=FaceAiSharp.Bundle&logo=nuget)](https://www.nuget.org/packages/FaceAiSharp.Bundle/)
 
 FaceAiSharp is a .NET library that allows you to work with face-related computer vision tasks. It currently provides face detection, face recognition, facial landmarks detection, and eye state detection functionalities. FaceAiSharp leverages publicly available pretrained ONNX models to deliver accurate and efficient results and offers a convenient way to integrate them into your .NET applications. Whether you need to find faces, recognize individuals, detect facial landmarks, or determine eye states, FaceAiSharp simplifies the process with its simple API. ONNXRuntime is used for model inference, enabling hardware acceleration were possible.
 
@@ -107,19 +107,19 @@ Try the interactive examples on <https://facerec.gjung.com/> or review the code 
 
 ## Models
 
-- Face Detection and Facial Landmarks Detection: [SCRFD](https://github.com/deepinsight/insightface/tree/master/detection/scrfd)_2.5G_KPS ![Nuget](https://img.shields.io/nuget/v/FaceAiSharp.Models.Scrfd.2dot5g_kps?color=blue)
+- Face Detection and Facial Landmarks Detection: [SCRFD](https://github.com/deepinsight/insightface/tree/master/detection/scrfd)_2.5G_KPS [![Nuget](https://img.shields.io/nuget/v/FaceAiSharp.Models.Scrfd.2dot5g_kps?color=blue&label=FaceAiSharp.Models.Scrfd.2dot5g_kps&logo=nuget)](https://www.nuget.org/packages/FaceAiSharp.Models.Scrfd.2dot5g_kps)
   - WIDERFACE Hard/Medium/Easy accuracy: 93.80% / 92.02% / 77.13%
   - GFlops: 2.5
   - Model size: 3,215 KB
 - Face Recognition: [ArcFace from ONNX Model Zoo](https://github.com/onnx/models/tree/main/vision/body_analysis/arcface)
-  - fp32 ![Nuget](https://img.shields.io/nuget/v/FaceAiSharp.Models.ArcFace.LResNet100E-IR?color=blue)
+  - fp32 [![Nuget](https://img.shields.io/nuget/v/FaceAiSharp.Models.ArcFace.LResNet100E-IR?color=blue&label=FaceAiSharp.Models.ArcFace.LResNet100E-IR&logo=nuget)](https://www.nuget.org/packages/FaceAiSharp.Models.ArcFace.LResNet100E-IR)
     - LFW Accuracy: 99.77%
     - Model size: 248.9 MB
-  - int8 quantized ![Nuget](https://img.shields.io/nuget/v/FaceAiSharp.Models.ArcFace.LResNet100E-IR-int8?color=blue)
+  - int8 quantized [![Nuget](https://img.shields.io/nuget/v/FaceAiSharp.Models.ArcFace.LResNet100E-IR-int8?color=blue&label=FaceAiSharp.Models.ArcFace.LResNet100E-IR-int8&logo=nuget)](https://www.nuget.org/packages/FaceAiSharp.Models.ArcFace.LResNet100E-IR-int8)
     - LFW accuracy: 99.80%
     - Model size: 63 MB
     - Depending on your specific hardware, inference might be more or less efficient than with the fp32 variant.
-- Eye State Detection: Intel OpenVINO's [open-closed-eye-0001](https://docs.openvino.ai/2022.3/omz_models_model_open_closed_eye_0001.html) ![Nuget](https://img.shields.io/nuget/v/FaceAiSharp.Models.OpenVino.open-closed-eye-0001?color=blue)
+- Eye State Detection: Intel OpenVINO's [open-closed-eye-0001](https://docs.openvino.ai/2022.3/omz_models_model_open_closed_eye_0001.html) [![Nuget](https://img.shields.io/nuget/v/FaceAiSharp.Models.OpenVino.open-closed-eye-0001?color=blue&label=FaceAiSharp.Models.OpenVino.open-closed-eye-0001&logo=nuget)](https://www.nuget.org/packages/FaceAiSharp.Models.OpenVino.open-closed-eye-0001)
   - Accuracy: 95.85%
   - GFlops: 0.0014
   - Model size: 46 KB
