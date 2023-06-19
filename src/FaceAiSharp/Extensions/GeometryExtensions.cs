@@ -297,7 +297,7 @@ public static class GeometryExtensions
     internal static float GetAlignmentAngle(this PointF left, PointF right)
     {
         // adapted from https://stackoverflow.com/a/12892493/1200847
-        var diff = left - right;
+        var diff = right - left;
         return (float)(Math.Atan2(diff.Y, diff.X) * 180.0 / Math.PI * -1);
     }
 }
