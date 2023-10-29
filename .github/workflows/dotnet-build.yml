@@ -28,6 +28,17 @@ jobs:
       id: nbgv
     - run: dotnet restore /p:ContinuousIntegrationBuild=true
     - run: dotnet build -c Release --no-restore /p:ContinuousIntegrationBuild=true
+    - run: >-
+        dotnet test
+        -c Release --no-restore --no-build
+        -s CodeCoverage.runsettings
+        --logger "trx;LogFileName=test-results-${{ steps.nbgv.outputs.Version }}.trx"
+        --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
+    - uses: actions/upload-artifact@v3
+      if: success() || failure()
+      with:
+        name: test-results
+        path: "**/*.trx"
     - run: dotnet pack -c Release --no-restore --no-build /p:ContinuousIntegrationBuild=true
     - uses: actions/upload-artifact@v3
       with:
