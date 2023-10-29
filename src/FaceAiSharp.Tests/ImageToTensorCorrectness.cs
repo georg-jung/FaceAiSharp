@@ -10,7 +10,7 @@ namespace FaceAiSharp.Tests;
 
 public class ImageToTensorCorrectness
 {
-    private readonly string _imgPath = $@"{AppContext.BaseDirectory}..\..\..\..\media\portraits\Barack_Obama_01.jpg";
+    private readonly string _imgPath = $@"{AppContext.BaseDirectory}../../../../examples/obama_family.jpg";
     private readonly Image<Rgb24> _img;
 
     public ImageToTensorCorrectness()
