@@ -38,7 +38,18 @@ jobs:
       if: success() || failure()
       with:
         name: test-results
-        path: "**/*.trx"
+        path: |
+          **/*.trx
+          **/coverage.cobertura.xml
+    - name: ReportGenerator
+      uses: danielpalme/ReportGenerator-GitHub-Action@5.1.26
+      with:
+        reports: "**/coverage.cobertura.xml"
+        targetdir: coveragereport
+    - uses: actions/upload-artifact@v3
+      with:
+        name: CoverageReport-${{ steps.nbgv.outputs.Version }}
+        path: coveragereport
     - run: dotnet pack -c Release --no-restore --no-build /p:ContinuousIntegrationBuild=true
     - uses: actions/upload-artifact@v3
       with:
