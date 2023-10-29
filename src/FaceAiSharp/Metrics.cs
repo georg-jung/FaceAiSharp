@@ -69,14 +69,14 @@ public static class Metrics
     }
 
     /// <summary>
-    /// Finds the optimal threshold for a binary classifier. The optimal threshold is defined as the threshold
+    /// Finds an optimal threshold for a binary classifier. An optimal threshold is defined as the threshold
     /// that leads to the highest possible accuracy.
     /// </summary>
     /// <param name="estimations">
     ///     A list of tuples of confidence values our model calculated with their the corresponding
     ///     ground-truth values.
     /// </param>
-    /// <returns>The threshold that leads to the highest possible accuracy.</returns>
+    /// <returns>A threshold that leads to the highest possible accuracy.</returns>
     public static float FindThreshold(IReadOnlyList<(float Confidence, bool IsMatch)> estimations)
     {
         var idx = 0;
