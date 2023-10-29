@@ -7,7 +7,6 @@ on:
         required: true
         type: string
   workflow_dispatch:
-  push:
   schedule: # for CodeQL
     - cron: '30 4 1 * *' # on every month's first day at 4:30 UTC
 
@@ -24,7 +23,7 @@ jobs:
       actions: read          # for CodeQL
       contents: read
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
         lfs: true
