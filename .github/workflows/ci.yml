@@ -1,4 +1,4 @@
-name: dotnet build
+name: CI
 
 on:
   workflow_call:
