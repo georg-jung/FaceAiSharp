@@ -90,10 +90,10 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
 
         (var img, var disp) = image.EnsureProperlySized<Rgb24>(resizeOptions, !Options.AutoResizeInputToModelDimensions);
         using var usingDisp = disp;
-        var scale = 1 / image.Bounds().GetScaleFactorToFitInto(resizeOptions.Size);
+        var scale = 1 / image.Bounds.GetScaleFactorToFitInto(resizeOptions.Size);
 
         var input = CreateImageTensor(img);
-        return Detect(input, img.Size(), scale);
+        return Detect(input, img.Size, scale);
     }
 
     IReadOnlyList<PointF> IFaceLandmarksDetector.DetectLandmarks(Image<Rgb24> image) => DetectFaces(image).MaxBy(x => x.Confidence).Landmarks!;

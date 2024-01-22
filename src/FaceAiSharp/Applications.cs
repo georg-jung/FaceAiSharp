@@ -26,7 +26,7 @@ public static class Applications
             foreach (var fc in res)
             {
                 var r = Rectangle.Round(fc.Box);
-                r.Intersect(input.Bounds());
+                r.Intersect(input.Bounds);
                 var max = Math.Max(r.Width, r.Height);
                 var sigma = Math.Max(max / blurSigmaFactor, blurSigmaFactor);
                 op.GaussianBlur(sigma, r);
@@ -47,7 +47,7 @@ public static class Applications
         var maxFace = res.MaxBy(x => x.Confidence);
         var r = Rectangle.Round(maxFace.Box);
         r = r.ScaleCentered(scaleFactor);
-        r.Intersect(input.Bounds());
+        r.Intersect(input.Bounds);
         var angl = 0.0f;
         if (maxFace.Landmarks is not null && detector is IFaceDetectorWithLandmarks lmdet)
         {
