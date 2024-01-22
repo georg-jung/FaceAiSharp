@@ -136,7 +136,7 @@ internal sealed class GenerateEmbeddings : IDisposable
     {
         var img = Image.Load<Rgb24>(filePath);
         var dets = _det.DetectFaces(img);
-        var imgCenter = RectangleF.Center(img.Bounds());
+        var imgCenter = RectangleF.Center(img.Bounds);
         var middleFace = dets.MinBy(x => RectangleF.Center(x.Box).EuclideanDistance(imgCenter));
         Debug.Assert(middleFace.Landmarks != null, "No landmarks detected but required");
         var (leye, reye) = (ScrfdDetector.GetLeftEye(middleFace.Landmarks), ScrfdDetector.GetRightEye(middleFace.Landmarks));
@@ -149,7 +149,7 @@ internal sealed class GenerateEmbeddings : IDisposable
     {
         var img = Image.Load<Rgb24>(filePath);
         var dets = _det.DetectFaces(img);
-        var imgCenter = RectangleF.Center(img.Bounds());
+        var imgCenter = RectangleF.Center(img.Bounds);
         var middleFace = dets.MinBy(x => RectangleF.Center(x.Box).EuclideanDistance(imgCenter));
         img.CropAlignedDestructive(Rectangle.Round(middleFace.Box), 0, 112);
         return img;
@@ -165,7 +165,7 @@ internal sealed class GenerateEmbeddings : IDisposable
     {
         var img = Image.Load<Rgb24>(filePath);
         var dets = _det.DetectFaces(img);
-        var imgCenter = RectangleF.Center(img.Bounds());
+        var imgCenter = RectangleF.Center(img.Bounds);
         var middleFace = dets.MinBy(x => RectangleF.Center(x.Box).EuclideanDistance(imgCenter));
         Debug.Assert(middleFace.Landmarks != null, "No landmarks detected but required");
         _emb.AlignFaceUsingLandmarks(img, middleFace.Landmarks);
