@@ -31,16 +31,13 @@ jobs:
     - run: >-
         dotnet test
         -c Release --no-restore --no-build
+        /p:ContinuousIntegrationBuild=true
+        /p:CoverletOutputFormat=\"opencover,cobertura\"
         -s CodeCoverage.runsettings
-        --logger "trx;LogFileName=test-results-${{ steps.nbgv.outputs.Version }}.trx"
-        --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
-    - uses: actions/upload-artifact@v4
-      if: success() || failure()
-      with:
-        name: test-results
-        path: |
-          **/*.trx
-          **/coverage.cobertura.xml
+        --collect:"XPlat Code Coverage"
+        --logger "GitHubActions;summary.includePassedTests=true;summary.includeSkippedTests=true"
+        --
+        RunConfiguration.CollectSourceInformation=true
     - name: ReportGenerator
       uses: danielpalme/ReportGenerator-GitHub-Action@5
       with:
@@ -51,6 +48,12 @@ jobs:
       with:
         name: CoverageReport-${{ steps.nbgv.outputs.Version }}
         path: coveragereport
+    - name: Upload coverage reports to Codecov
+      if: ${{ env.CODECOV_TOKEN }}
+      uses: codecov/codecov-action@v4
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        slug: georg-jung/FaceAiSharp
     - run: dotnet pack -c Release --no-restore --no-build /p:ContinuousIntegrationBuild=true
     - uses: actions/upload-artifact@v4
       with:
