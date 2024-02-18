@@ -46,6 +46,7 @@ jobs:
       with:
         reports: "**/coverage.cobertura.xml"
         targetdir: coveragereport
+        license: ${{ secrets.ReportGeneratorLicense }}
     - uses: actions/upload-artifact@v4
       with:
         name: CoverageReport-${{ steps.nbgv.outputs.Version }}
