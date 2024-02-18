@@ -34,7 +34,7 @@ jobs:
         -s CodeCoverage.runsettings
         --logger "trx;LogFileName=test-results-${{ steps.nbgv.outputs.Version }}.trx"
         --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       if: success() || failure()
       with:
         name: test-results
@@ -42,16 +42,16 @@ jobs:
           **/*.trx
           **/coverage.cobertura.xml
     - name: ReportGenerator
-      uses: danielpalme/ReportGenerator-GitHub-Action@5.1.26
+      uses: danielpalme/ReportGenerator-GitHub-Action@5
       with:
         reports: "**/coverage.cobertura.xml"
         targetdir: coveragereport
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: CoverageReport-${{ steps.nbgv.outputs.Version }}
         path: coveragereport
     - run: dotnet pack -c Release --no-restore --no-build /p:ContinuousIntegrationBuild=true
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: nupkg
         path: bin/Packages/Release/**/*
