@@ -1,0 +1,138 @@
+﻿[
+  {
+    Confidence: 0.9,
+    X: 18.0,
+    Y: 8.0,
+    Width: 6.0,
+    Height: 8.0,
+    Landmarks: [
+      {
+        X: 20.0,
+        Y: 11.0,
+        IsEmpty: false
+      },
+      {
+        X: 23.0,
+        Y: 12.0,
+        IsEmpty: false
+      },
+      {
+        X: 21.0,
+        Y: 13.0,
+        IsEmpty: false
+      },
+      {
+        X: 19.0,
+        Y: 14.0,
+        IsEmpty: false
+      },
+      {
+        X: 22.0,
+        Y: 14.0,
+        IsEmpty: false
+      }
+    ]
+  },
+  {
+    Confidence: 0.9,
+    X: 25.0,
+    Y: 10.0,
+    Width: 6.0,
+    Height: 8.0,
+    Landmarks: [
+      {
+        X: 26.0,
+        Y: 14.0,
+        IsEmpty: false
+      },
+      {
+        X: 29.0,
+        Y: 14.0,
+        IsEmpty: false
+      },
+      {
+        X: 28.0,
+        Y: 15.0,
+        IsEmpty: false
+      },
+      {
+        X: 27.0,
+        Y: 16.0,
+        IsEmpty: false
+      },
+      {
+        X: 30.0,
+        Y: 16.0,
+        IsEmpty: false
+      }
+    ]
+  },
+  {
+    Confidence: 0.9,
+    X: 38.0,
+    Y: 8.0,
+    Width: 6.0,
+    Height: 10.0,
+    Landmarks: [
+      {
+        X: 40.0,
+        Y: 12.0,
+        IsEmpty: false
+      },
+      {
+        X: 43.0,
+        Y: 12.0,
+        IsEmpty: false
+      },
+      {
+        X: 42.0,
+        Y: 14.0,
+        IsEmpty: false
+      },
+      {
+        X: 40.0,
+        Y: 15.0,
+        IsEmpty: false
+      },
+      {
+        X: 43.0,
+        Y: 15.0,
+        IsEmpty: false
+      }
+    ]
+  },
+  {
+    Confidence: 0.9,
+    X: 45.0,
+    Y: 9.0,
+    Width: 7.0,
+    Height: 8.0,
+    Landmarks: [
+      {
+        X: 47.0,
+        Y: 13.0,
+        IsEmpty: false
+      },
+      {
+        X: 49.0,
+        Y: 12.0,
+        IsEmpty: false
+      },
+      {
+        X: 48.0,
+        Y: 14.0,
+        IsEmpty: false
+      },
+      {
+        X: 48.0,
+        Y: 15.0,
+        IsEmpty: false
+      },
+      {
+        X: 50.0,
+        Y: 14.0,
+        IsEmpty: false
+      }
+    ]
+  }
+]
