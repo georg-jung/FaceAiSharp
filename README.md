@@ -2,6 +2,7 @@
 
 [![Nuget](https://img.shields.io/nuget/v/FaceAiSharp?label=FaceAiSharp&logo=nuget)](https://www.nuget.org/packages/FaceAiSharp/)
 [![Nuget](https://img.shields.io/nuget/v/FaceAiSharp.Bundle?label=FaceAiSharp.Bundle&logo=nuget)](https://www.nuget.org/packages/FaceAiSharp.Bundle/)
+[![codecov](https://codecov.io/gh/georg-jung/FaceAiSharp/graph/badge.svg?token=KEXITJ1M51)](https://codecov.io/gh/georg-jung/FaceAiSharp)
 
 FaceAiSharp is a .NET library that allows you to work with face-related computer vision tasks. It currently provides face detection, face recognition, facial landmarks detection, and eye state detection functionalities. FaceAiSharp leverages publicly available pretrained ONNX models to deliver accurate and efficient results and offers a convenient way to integrate them into your .NET applications. Whether you need to find faces, recognize individuals, detect facial landmarks, or determine eye states, FaceAiSharp simplifies the process with its simple API. ONNXRuntime is used for model inference, enabling hardware acceleration were possible.
 
