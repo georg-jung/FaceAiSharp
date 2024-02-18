@@ -9,6 +9,7 @@
     <PackageVersion Include="Accord.Statistics" Version="3.8.0" />
     <PackageVersion Include="BenchmarkDotNet" Version="0.13.12" />
     <PackageVersion Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.13.12" />
+    <PackageVersion Include="Codeuctivity.ImageSharpCompare" Version="2.0.182" />
     <PackageVersion Include="CommunityToolkit.Diagnostics" Version="8.2.2" />
     <PackageVersion Include="FaceAiSharp.Models.Scrfd.2dot5g_kps" Version="0.20230205.2" />
     <PackageVersion Include="FaceAiSharp.Models.ArcFace.LResNet100E-IR-int8" Version="0.20230419.1" />
