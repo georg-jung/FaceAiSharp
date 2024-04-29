@@ -14,7 +14,7 @@
     <PackageVersion Include="FaceAiSharp.Models.Scrfd.2dot5g_kps" Version="0.20230205.2" />
     <PackageVersion Include="FaceAiSharp.Models.ArcFace.LResNet100E-IR-int8" Version="0.20230419.1" />
     <PackageVersion Include="FaceAiSharp.Models.OpenVino.open-closed-eye-0001" Version="0.20220116.2" />
-    <PackageVersion Include="FaceONNX" Version="2.2.0.4" />
+    <PackageVersion Include="FaceONNX" Version="4.0.0.2" />
     <PackageVersion Include="GitHubActionsTestLogger" Version="2.3.3" />
     <PackageVersion Include="Humanizer.Core" Version="2.14.1" />
     <PackageVersion Include="MathNet.Numerics" Version="5.0.0" />
