@@ -14,14 +14,18 @@ namespace Benchmarks;
 [MemoryDiagnoser]
 public class ImageCloneVsMutate
 {
+    // private readonly Image<Rgb24> _img = Image.Load<Rgb24>(@"TestData/jpgs/biden_7mpx.jpg");
     private readonly Image<Rgb24> _img = Image.Load<Rgb24>(@"TestData/jpgs/group_10mpx.jpg");
     private readonly IFaceDetectorWithLandmarks _det;
     private readonly IReadOnlyCollection<FaceDetectorResult> _detectorResults;
+    private readonly FaceDetectorResult _firstDetectorResult;
+    private Image<Rgb24>? _iterationImg;
 
     public ImageCloneVsMutate()
     {
         _det = FaceAiSharpBundleFactory.CreateFaceDetectorWithLandmarks();
         _detectorResults = _det.DetectFaces(_img);
+        _firstDetectorResult = _detectorResults.First();
     }
 
     [Benchmark]
@@ -43,6 +47,33 @@ public class ImageCloneVsMutate
         }
     }
 
+    // not required for MutatingFirstCloning, but execute it in same way as MutatingFirstWithoutClone to be fair
+    [IterationSetup(Targets = [nameof(MutatingFirstWithoutClone), nameof(MutatingFirstCloning)])]
+    public void CloneOnceForBench()
+    {
+        _iterationImg?.Dispose();
+        _iterationImg = _img.Clone();
+    }
+
+    [IterationCleanup(Targets = [nameof(MutatingFirstWithoutClone), nameof(MutatingFirstCloning)])]
+    public void DisposeIterationClone()
+    {
+        _iterationImg?.Dispose();
+    }
+
+    [Benchmark]
+    public void MutatingFirstWithoutClone()
+    {
+        AlignFaceUsingLandmarksMutating(_iterationImg!, _firstDetectorResult.Landmarks!, edgeSize: 300);
+    }
+
+    [Benchmark]
+    public void MutatingFirstCloning()
+    {
+        AlignFaceUsingLandmarksCloning(_img, _firstDetectorResult.Landmarks!, edgeSize: 300);
+    }
+
+    // below: copied from ArcFaceEmbeddingsGenerator.cs
     private static Image<Rgb24> AlignFaceUsingLandmarksCloning(Image<Rgb24> face, IReadOnlyList<PointF> landmarks, int edgeSize = 112)
     {
         var cutRect = new Rectangle(0, 0, edgeSize, edgeSize);
