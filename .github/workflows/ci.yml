@@ -39,7 +39,7 @@ jobs:
         --
         RunConfiguration.CollectSourceInformation=true
     - name: ReportGenerator
-      uses: danielpalme/ReportGenerator-GitHub-Action@5
+      uses: danielpalme/ReportGenerator-GitHub-Action@v5
       with:
         reports: "**/coverage.cobertura.xml"
         targetdir: coveragereport
