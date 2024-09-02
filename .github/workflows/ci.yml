@@ -43,11 +43,15 @@ jobs:
       with:
         reports: "**/coverage.cobertura.xml"
         targetdir: coveragereport
+        reporttypes: "Html;MarkdownSummaryGithub"
         license: ${{ secrets.ReportGeneratorLicense }}
     - uses: actions/upload-artifact@v4
       with:
         name: CoverageReport-${{ steps.nbgv.outputs.Version }}
         path: coveragereport
+    - name: Publish coverage in build summary # Only applicable if 'MarkdownSummaryGithub' or one of the other Markdown report types is generated
+      run: cat coveragereport/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
+      shell: bash
     - name: Upload coverage reports to Codecov
       if: ${{ env.CODECOV_TOKEN }}
       uses: codecov/codecov-action@v4
