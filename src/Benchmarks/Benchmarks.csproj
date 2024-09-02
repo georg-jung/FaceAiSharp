@@ -19,10 +19,15 @@
       <Link>TestData\%(RecursiveDir)%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="..\..\examples\*.jpg">
+      <Link>TestData\jpgs\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\FaceAiSharp\FaceAiSharp.csproj" />
+    <ProjectReference Include="..\FaceAiSharp.Bundle\FaceAiSharp.Bundle.csproj" />
     <ProjectReference Include="..\FaceAiSharp.FaceONNX\FaceAiSharp.FaceONNX.csproj" />
   </ItemGroup>
 
