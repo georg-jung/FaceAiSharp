@@ -25,8 +25,8 @@
     <PackageVersion Include="Microsoft.CodeCoverage" Version="17.11.0" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.19.1" />
-    <PackageVersion Include="Microsoft.ML.OnnxRuntime.Managed" Version="1.19.1" />
+    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.19.2" />
+    <PackageVersion Include="Microsoft.ML.OnnxRuntime.Managed" Version="1.19.2" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntime.DirectML" Version="1.19.1" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.0" />
     <PackageVersion Include="NodaTime" Version="3.1.11" />
