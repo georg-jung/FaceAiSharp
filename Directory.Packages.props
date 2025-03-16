@@ -10,7 +10,7 @@
     <PackageVersion Include="BenchmarkDotNet" Version="0.14.0" />
     <PackageVersion Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.14.0" />
     <PackageVersion Include="Codeuctivity.ImageSharpCompare" Version="4.0.298" />
-    <PackageVersion Include="CommunityToolkit.Diagnostics" Version="8.3.0" />
+    <PackageVersion Include="CommunityToolkit.Diagnostics" Version="8.4.0" />
     <PackageVersion Include="FaceAiSharp.Models.Scrfd.2dot5g_kps" Version="0.20230205.2" />
     <PackageVersion Include="FaceAiSharp.Models.ArcFace.LResNet100E-IR-int8" Version="0.20230419.1" />
     <PackageVersion Include="FaceAiSharp.Models.OpenVino.open-closed-eye-0001" Version="0.20220116.2" />
@@ -19,36 +19,36 @@
     <PackageVersion Include="Humanizer.Core" Version="2.14.1" />
     <PackageVersion Include="MathNet.Numerics" Version="5.0.0" />
     <PackageVersion Include="LiteDB" Version="5.0.21" />
-    <PackageVersion Include="Microsoft.AI.DirectML" Version="1.15.2" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" />
+    <PackageVersion Include="Microsoft.AI.DirectML" Version="1.15.4" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.13.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" />
-    <PackageVersion Include="Microsoft.CodeCoverage" Version="17.12.0" />
+    <PackageVersion Include="Microsoft.CodeCoverage" Version="17.13.0" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="8.0.1" />
-    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.19.1" />
-    <PackageVersion Include="Microsoft.ML.OnnxRuntime.Managed" Version="1.19.1" />
-    <PackageVersion Include="Microsoft.ML.OnnxRuntime.DirectML" Version="1.19.1" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-    <PackageVersion Include="NodaTime" Version="3.2.0" />
+    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.21.0" />
+    <PackageVersion Include="Microsoft.ML.OnnxRuntime.Managed" Version="1.21.0" />
+    <PackageVersion Include="Microsoft.ML.OnnxRuntime.DirectML" Version="1.21.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+    <PackageVersion Include="NodaTime" Version="3.2.1" />
     <PackageVersion Include="NumSharp" Version="0.30.0" />
-    <PackageVersion Include="Shouldly" Version="4.2.1" />
+    <PackageVersion Include="Shouldly" Version="4.3.0" />
     <PackageVersion Include="SimpleSIMD" Version="3.3.1" />
-    <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.6" />
-    <PackageVersion Include="SixLabors.ImageSharp.Drawing" Version="2.1.4" />
+    <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.7" />
+    <PackageVersion Include="SixLabors.ImageSharp.Drawing" Version="2.1.5" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
     <PackageVersion Include="System.Interactive" Version="6.0.1" />
     <PackageVersion Include="System.Threading.Channels" Version="8.0.0" />
     <PackageVersion Include="UMAP" Version="1.0.34015" />
-    <PackageVersion Include="Verify.Xunit" Version="28.3.2" />
+    <PackageVersion Include="Verify.Xunit" Version="28.15.0" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
-    <PackageVersion Include="xunit" Version="2.9.2" />
-    <PackageVersion Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
-    <PackageVersion Include="coverlet.collector" Version="6.0.2" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.0" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
   </ItemGroup>
   <ItemGroup>
     <GlobalPackageReference Include="CSharpIsNullAnalyzer" Version="0.1.593" />
     <GlobalPackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" />
-    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.6.146" />
+    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.7.115" />
     <GlobalPackageReference Include="StyleCop.Analyzers.Unstable" Version="1.2.0.556" />
   </ItemGroup>
   <ItemGroup>
