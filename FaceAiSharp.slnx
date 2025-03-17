@@ -1,0 +1,19 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+    <File Path="nuget.config" />
+    <File Path="README.md" />
+    <File Path="stylecop.json" />
+    <File Path="version.json" />
+  </Folder>
+  <Project Path="src/Benchmarks/Benchmarks.csproj" />
+  <Project Path="src/FaceAiSharp.Bundle/FaceAiSharp.Bundle.csproj" />
+  <Project Path="src/FaceAiSharp.FaceONNX/FaceAiSharp.FaceONNX.csproj" />
+  <Project Path="src/FaceAiSharp.Tests/FaceAiSharp.Tests.csproj" />
+  <Project Path="src/FaceAiSharp.Validation/FaceAiSharp.Validation.csproj" />
+  <Project Path="src/FaceAiSharp/FaceAiSharp.csproj" />
+</Solution>
