@@ -210,7 +210,13 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
         preDet = preDet[order];
         var keep = np.array(NonMaxSupression(preDet, Options.NonMaxSupressionThreshold));
         var det = preDet[keep];
-        det *= scale;
+        for (int i = 0; i < det.shape[0]; i++)
+        {
+            det[i][0] *= scale;
+            det[i][1] *= scale;
+            det[i][2] *= scale;
+            det[i][3] *= scale;
+        }
 
         NDArray? kpss = null;
         if (kpssLst.Count > 0)
