@@ -29,6 +29,7 @@ This package contains just FaceAiSharp's managed code and does not include any O
     <PackageReference Include="SimpleSIMD" />
     <PackageReference Include="SixLabors.ImageSharp" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" />
+    <PackageReference Include="System.Numerics.Tensors" />
   </ItemGroup>
 
 </Project>

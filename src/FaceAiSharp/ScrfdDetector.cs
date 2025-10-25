@@ -1,6 +1,7 @@
 // Copyright (c) Georg Jung. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Numerics.Tensors;
 using System.Runtime.CompilerServices;
 using FaceAiSharp.Extensions;
 using FaceAiSharp.Simd;
@@ -170,7 +171,7 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
         var strideResults = new List<FaceDetectorResult>();
         foreach (var (idx, stride) in _modelParameters.FeatStrideFpn.Select((val, idx) => (idx, val)))
         {
-            var strideRes = HandleStride(idx, stride, outputs.ToList(), imgSize);
+            var strideRes = HandleStride(idx, stride, outputs.ToList(), imgSize, scale);
             strideResults.AddRange(strideRes ?? []);
         }
 
@@ -214,7 +215,7 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
         return indices;
     }
 
-    private static IReadOnlyList<PointF> Kps(ReadOnlySpan<float> flatKps, int anchorX, int anchorY, int stride) => [
+    private static IReadOnlyList<PointF> Kps(ReadOnlySpan<float> flatKps, float anchorX, float anchorY, int stride) => [
             new(anchorX + (flatKps[0] * stride), anchorY + (flatKps[1] * stride)),
             new(anchorX + (flatKps[2] * stride), anchorY + (flatKps[3] * stride)),
             new(anchorX + (flatKps[4] * stride), anchorY + (flatKps[5] * stride)),
@@ -222,7 +223,7 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
             new(anchorX + (flatKps[8] * stride), anchorY + (flatKps[9] * stride)),
         ];
 
-    private List<FaceDetectorResult>? HandleStride(int strideIndex, int stride, IReadOnlyList<NamedOnnxValue> outputs, Size inputSize)
+    private List<FaceDetectorResult>? HandleStride(int strideIndex, int stride, IReadOnlyList<NamedOnnxValue> outputs, Size inputSize, float scale)
     {
         var thresh = Options.ConfidenceThreshold;
         var scores = outputs[strideIndex].ToArray<float>();
@@ -234,11 +235,20 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
 
         var bboxPreds = outputs[strideIndex + _modelParameters.Fmc].ToArray<float>();
         var kpsPreds = outputs.ElementAtOrDefault(strideIndex + (_modelParameters.Fmc * 2))?.ToArray<float>();
+        if (scale != 1.0f)
+        {
+            TensorPrimitives.Multiply(bboxPreds, scale, bboxPreds);
+            if (kpsPreds is not null)
+            {
+                TensorPrimitives.Multiply(kpsPreds, scale, kpsPreds);
+            }
+        }
 
         var returnValues = new List<FaceDetectorResult>(indicesAboveThreshold.Count);
         foreach (var anchorIdx in indicesAboveThreshold)
         {
-            var (x, y) = GetAnchorCenter(inputSize, stride, _modelParameters.NumAnchors, anchorIdx);
+            (float x, float y) = GetAnchorCenter(inputSize, stride, _modelParameters.NumAnchors, anchorIdx);
+            (x, y) = (x * scale, y * scale);
             var bboxBaseIdx = anchorIdx * 4;
             var (x0diff, y0diff, x1diff, y1diff) = (bboxPreds[bboxBaseIdx + 0] * stride, bboxPreds[bboxBaseIdx + 1] * stride, bboxPreds[bboxBaseIdx + 2] * stride, bboxPreds[bboxBaseIdx + 3] * stride);
             var bbox = new RectangleF(x - x0diff, y - y0diff, x0diff + x1diff, y0diff + y1diff);
