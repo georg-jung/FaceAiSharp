@@ -272,16 +272,23 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
     }
 
     /// <summary>
-    /// In real numpy this could be eg. np.where(scores&gt;=thresh) or np.asarray(condition).nonzero().
+    /// Gets the indices of elements that are larger than or equal to a threshold.
     /// </summary>
-    /// <param name="input">The indices of this array's elements should be returned.</param>
-    /// <param name="threshold">The threshold value. Exclusive.</param>
-    /// <returns>An NDArray contianing the indices.</returns>
-    private static NDArray IndicesOfElementsLargerThen(NDArray input, float threshold)
+    /// <param name="input">The array to search.</param>
+    /// <param name="threshold">The threshold value. Inclusive.</param>
+    /// <returns>An array of indices where input[i] >= threshold.</returns>
+    private static List<int> IndicesOfElementsLargerThanOrEqual(float[] input, float threshold)
     {
-        var zeroIfBelow = np.sign(input - threshold) + 1;
-        var ret = np.nonzero(zeroIfBelow);
-        return ret[0];
+        var indices = new List<int>();
+        for (var i = 0; i < input.Length; i++)
+        {
+            if (input[i] >= threshold)
+            {
+                indices.Add(i);
+            }
+        }
+
+        return indices;
     }
 
     private static NDArray Distance2Bbox(NDArray points, NDArray distance)
@@ -310,14 +317,21 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
     private (NDArray Scores, NDArray Bboxes, NDArray? Kpss)? HandleStride(int strideIndex, int stride, IReadOnlyList<NamedOnnxValue> outputs, Size inputSize, bool batched)
     {
         var thresh = Options.ConfidenceThreshold;
-        var scores = outputs[strideIndex].ToNDArray<float>();
+        var scores = outputs[strideIndex].ToArray<float>();
+        var indicesAboveThreshold = IndicesOfElementsLargerThanOrEqual(scores, thresh);
+        if (indicesAboveThreshold.Count == 0)
+        {
+            return null;
+        }
+
+        var scoresNd = outputs[strideIndex].ToNDArray<float>();
         var bbox_preds = outputs[strideIndex + _modelParameters.Fmc].ToNDArray<float>();
         var kps_preds = outputs.ElementAtOrDefault(strideIndex + (_modelParameters.Fmc * 2))?.ToNDArray<float>();
 
         if (batched)
         {
             bbox_preds = bbox_preds[0];
-            scores = scores[0];
+            scoresNd = scoresNd[0];
             kps_preds = kps_preds?[0];
         }
 
@@ -326,16 +340,10 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
 
         var anchorCenters = GetAnchorCenters(inputSize, stride, _modelParameters.NumAnchors);
 
-        // this is >= in python but > here
-        var pos_inds = IndicesOfElementsLargerThen(scores, thresh);
-        if (pos_inds.size == 0)
-        {
-            return null;
-        }
-
+        var pos_inds = np.array(indicesAboveThreshold.ToArray());
         anchorCenters = anchorCenters[pos_inds];
         bbox_preds = bbox_preds[pos_inds];
-        scores = scores[pos_inds];
+        scoresNd = scoresNd[pos_inds];
 
         var bboxes = Distance2Bbox(anchorCenters, bbox_preds);
         NDArray? kpss = null;
@@ -347,7 +355,7 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
             kpss = kpss.reshape(kpss.shape[0], -1, 2);
         }
 
-        return (scores, bboxes, kpss);
+        return (scoresNd, bboxes, kpss);
     }
 
     private NDArray GetAnchorCenters(Size inputSize, int stride, int numAnchors)
