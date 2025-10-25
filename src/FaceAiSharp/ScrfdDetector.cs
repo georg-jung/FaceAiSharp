@@ -248,20 +248,27 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
         }
     }
 
-    private static NDArray GenerateAnchorCenters(Size inputSize, int stride, int numAnchors)
+    internal static float[] GenerateAnchorCenters(Size inputSize, int stride, int numAnchors)
     {
-        // translated from https://github.com/deepinsight/insightface/blob/f091989568cad5a0244e05be1b8d58723de210b0/detection/scrfd/tools/scrfd.py#L185
+        // see also https://github.com/deepinsight/insightface/blob/f091989568cad5a0244e05be1b8d58723de210b0/detection/scrfd/tools/scrfd.py#L185
         var height = inputSize.Height / stride;
         var width = inputSize.Width / stride;
-        var (mgrid1, mgrid2) = np.mgrid(np.arange(height), np.arange(width));
-        var anchorCenters = np.stack(new[] { mgrid2, mgrid1 }, axis: -1).astype(np.float32);
-        anchorCenters = (anchorCenters * stride).reshape(-1, 2);
-        if (numAnchors > 1)
+        var data = new float[height * width * numAnchors * 2];
+        var idx = 0;
+
+        for (var y = 0; y < height; y++)
         {
-            anchorCenters = np.stack(new[] { anchorCenters, anchorCenters }, axis: 1).reshape(-1, 2);
+            for (var x = 0; x < width; x++)
+            {
+                for (var a = 0; a < numAnchors; a++)
+                {
+                    data[idx++] = x * stride;
+                    data[idx++] = y * stride;
+                }
+            }
         }
 
-        return anchorCenters;
+        return data;
     }
 
     /// <summary>
@@ -347,7 +354,9 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
     => _cache.GetOrCreate((inputSize, stride, numAnchors), cacheEntry =>
     {
         cacheEntry.SetSlidingExpiration(TimeSpan.FromMinutes(20));
-        return GenerateAnchorCenters(inputSize, stride, numAnchors);
+        var floatData = GenerateAnchorCenters(inputSize, stride, numAnchors);
+        var nda = new NDArray(floatData, new Shape(floatData.Length / 2, 2));
+        return nda;
     })!;
 
     private ModelParameters DetermineModelParameters()
