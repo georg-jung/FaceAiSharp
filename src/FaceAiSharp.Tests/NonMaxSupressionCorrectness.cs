@@ -3,6 +3,7 @@
 
 using FaceAiSharp.Simd;
 using NumSharp;
+using SixLabors.ImageSharp;
 
 namespace FaceAiSharp.Tests;
 
@@ -33,9 +34,40 @@ public class NonMaxSupressionCorrectness
         }
     }
 
+    private static List<FaceDetectorResult> NDArray2FaceDetectorResults(NDArray dets)
+    {
+        var numDetections = dets.shape[0];
+        if (numDetections == 0)
+        {
+            return [];
+        }
+
+        var results = new List<FaceDetectorResult>(numDetections);
+        var x1s = dets[":, 0"].ToArray<float>();
+        var y1s = dets[":, 1"].ToArray<float>();
+        var x2s = dets[":, 2"].ToArray<float>();
+        var y2s = dets[":, 3"].ToArray<float>();
+        var scores = dets[":, 4"].ToArray<float>();
+        for (var i = 0; i < numDetections; i++)
+        {
+            var score = scores[i];
+
+            // RectangleF(float x, float y, float width, float height)
+            var box = new RectangleF(
+                x: x1s[i],
+                y: y1s[i],
+                width: x2s[i] - x1s[i],
+                height: y2s[i] - y1s[i]);
+
+            results.Add(new FaceDetectorResult(box, null, score));
+        }
+
+        return results;
+    }
+
     private static void TestInput(NDArray input, float thresh)
     {
-        var res1 = ScrfdDetector.NonMaxSupression(input, thresh);
+        var res1 = ScrfdDetector.NonMaxSupression(NDArray2FaceDetectorResults(input), thresh);
         var res2 = FromScrfdPy(input, thresh);
         Assert.Equal(res1, res2);
     }

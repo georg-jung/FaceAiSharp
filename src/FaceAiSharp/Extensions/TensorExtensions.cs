@@ -20,4 +20,10 @@ internal static class TensorExtensions
         arr.SetData(slice);
         return arr;
     }
+
+    public static T[] ToArray<T>(this NamedOnnxValue input)
+    {
+        var denseTensor = input.Value as DenseTensor<T> ?? input.AsTensor<T>().ToDenseTensor();
+        return denseTensor.ToArray();
+    }
 }

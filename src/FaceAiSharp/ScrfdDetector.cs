@@ -8,7 +8,6 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using NumSharp;
-using NumSharp.Backends.Unmanaged;
 using SimpleSimd;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -112,12 +111,12 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
     /// <param name="dets">All detections with their scores.</param>
     /// <param name="thresh">Non max suppression threshold.</param>
     /// <returns>Which detections to keep.</returns>
-    internal static List<int> NonMaxSupression(NDArray dets, float thresh)
+    internal static List<int> NonMaxSupression(IReadOnlyList<FaceDetectorResult> orderedResults, float thresh)
     {
-        var x1 = ((IArraySlice)dets[":, 0"].Data<float>()).AsSpan<float>();
-        var y1 = ((IArraySlice)dets[":, 1"].Data<float>()).AsSpan<float>();
-        var x2 = ((IArraySlice)dets[":, 2"].Data<float>()).AsSpan<float>();
-        var y2 = ((IArraySlice)dets[":, 3"].Data<float>()).AsSpan<float>();
+        float[] x1 = [.. orderedResults.Select(x => x.Box.Left)];
+        float[] x2 = [.. orderedResults.Select(x => x.Box.Right)];
+        float[] y1 = [.. orderedResults.Select(x => x.Box.Top)];
+        float[] y2 = [.. orderedResults.Select(x => x.Box.Bottom)];
 
         int len = x1.Length;
         var p = SimdOps<float>.Subtract(x2, x1);
@@ -174,78 +173,32 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
         var inputs = new List<NamedOnnxValue> { NamedOnnxValue.CreateFromTensor(_modelParameters.InputName, input) };
         using var outputs = _session.Run(inputs);
 
-        List<NDArray> scoresLst = new(_modelParameters.Fmc);
-        List<NDArray> bboxesLst = new(_modelParameters.Fmc);
-        List<NDArray> kpssLst = new(_modelParameters.Fmc);
-
+        var strideResults = new List<FaceDetectorResult>();
         foreach (var (idx, stride) in _modelParameters.FeatStrideFpn.Select((val, idx) => (idx, val)))
         {
             var strideRes = HandleStride(idx, stride, outputs.ToList(), imgSize, _modelParameters.Batching);
-            if (!strideRes.HasValue)
-            {
-                continue;
-            }
-
-            var (s, bb, kps) = strideRes.Value;
-            scoresLst.Add(s);
-            bboxesLst.Add(bb);
-            if (kps is not null)
-            {
-                kpssLst.Add(kps);
-            }
+            strideResults.AddRange(strideRes ?? []);
         }
 
-        var scores = scoresLst.Count != 0 ? np.vstack(scoresLst.ToArray()) : null;
-        if (scores is null || scores.size == 0)
+        if (strideResults.Count == 0)
         {
-            return new List<FaceDetectorResult>(0);
+            return [];
         }
 
-        var scores_ravel = scores.ravel();
-        var order = scores_ravel.argsort<float>()["::-1"];
-        var bboxes = np.vstack(bboxesLst.ToArray());
+        strideResults.Sort((a, b) => b.Confidence!.Value.CompareTo(a.Confidence!.Value));
+        var keepIdxs = NonMaxSupression(strideResults, Options.NonMaxSupressionThreshold);
+        return [.. keepIdxs.Select(i => strideResults[i])];
+    }
 
-        var preDet = np.hstack(bboxes, scores);
+    internal static (int X, int Y) GetAnchorCenter(Size inputSize, int stride, int numAnchors, int anchorIdx)
+    {
+        var height = inputSize.Height / stride;
+        var width = inputSize.Width / stride;
+        var anchorsPerRow = width * numAnchors;
+        var y = anchorIdx / anchorsPerRow;
+        var x = (anchorIdx % anchorsPerRow) / numAnchors;
 
-        preDet = preDet[order];
-        var keep = np.array(NonMaxSupression(preDet, Options.NonMaxSupressionThreshold));
-        var det = preDet[keep];
-        det *= scale;
-
-        NDArray? kpss = null;
-        if (kpssLst.Count > 0)
-        {
-            kpss = np.vstack(kpssLst.ToArray());
-            kpss = kpss[order];
-            kpss = kpss[keep];
-            kpss *= scale;
-        }
-
-        static FaceDetectorResult ToReturnType(NDArray input)
-        {
-            var x1 = input.GetSingle(0);
-            var y1 = input.GetSingle(1);
-            var x2 = input.GetSingle(2);
-            var y2 = input.GetSingle(3);
-            return new(new RectangleF(x1, y1, x2 - x1, y2 - y1), null, input.GetSingle(4));
-        }
-
-        static FaceDetectorResult ToReturnTypeWithLandmarks(NDArray input, NDArray kps)
-        {
-            var (box, _, conf) = ToReturnType(input);
-            var lmrks = new List<PointF>(5); // don't use ToList because we know we will always have eactly 5.
-            lmrks.AddRange(kps.GetNDArrays(0).Select(x => new PointF(x.GetSingle(0), x.GetSingle(1))));
-            return new(box, lmrks, conf);
-        }
-
-        if (kpss is not null)
-        {
-            return det.GetNDArrays(0).Zip(kpss.GetNDArrays(0)).Select(x => ToReturnTypeWithLandmarks(x.First, x.Second)).ToList();
-        }
-        else
-        {
-            return det.GetNDArrays(0).Select(ToReturnType).ToList();
-        }
+        return (x * stride, y * stride);
     }
 
     internal static float[] GenerateAnchorCenters(Size inputSize, int stride, int numAnchors)
@@ -314,7 +267,18 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
         return np.stack(preds, axis: -1);
     }
 
-    private (NDArray Scores, NDArray Bboxes, NDArray? Kpss)? HandleStride(int strideIndex, int stride, IReadOnlyList<NamedOnnxValue> outputs, Size inputSize, bool batched)
+    private static IReadOnlyList<PointF> Kps(ReadOnlySpan<float> flatKps, int anchorX, int anchorY, int stride)
+    {
+        return [
+            new(anchorX + (flatKps[0] * stride), anchorY + (flatKps[1] * stride)),
+            new(anchorX + (flatKps[2] * stride), anchorY + (flatKps[3] * stride)),
+            new(anchorX + (flatKps[4] * stride), anchorY + (flatKps[5] * stride)),
+            new(anchorX + (flatKps[6] * stride), anchorY + (flatKps[7] * stride)),
+            new(anchorX + (flatKps[8] * stride), anchorY + (flatKps[9] * stride)),
+        ];
+    }
+
+    private List<FaceDetectorResult>? HandleStride(int strideIndex, int stride, IReadOnlyList<NamedOnnxValue> outputs, Size inputSize, bool batched)
     {
         var thresh = Options.ConfidenceThreshold;
         var scores = outputs[strideIndex].ToArray<float>();
@@ -324,38 +288,29 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
             return null;
         }
 
-        var scoresNd = outputs[strideIndex].ToNDArray<float>();
-        var bbox_preds = outputs[strideIndex + _modelParameters.Fmc].ToNDArray<float>();
-        var kps_preds = outputs.ElementAtOrDefault(strideIndex + (_modelParameters.Fmc * 2))?.ToNDArray<float>();
+        var bboxPreds = outputs[strideIndex + _modelParameters.Fmc].ToArray<float>();
+        var kpsPreds = outputs.ElementAtOrDefault(strideIndex + (_modelParameters.Fmc * 2))?.ToArray<float>();
 
-        if (batched)
+        var returnValues = new List<FaceDetectorResult>(indicesAboveThreshold.Count);
+        foreach (var anchorIdx in indicesAboveThreshold)
         {
-            bbox_preds = bbox_preds[0];
-            scoresNd = scoresNd[0];
-            kps_preds = kps_preds?[0];
+            var (x, y) = GetAnchorCenter(inputSize, stride, _modelParameters.NumAnchors, anchorIdx);
+            var bboxBaseIdx = anchorIdx * 4;
+            var (x0diff, y0diff, x1diff, y1diff) = (bboxPreds[bboxBaseIdx + 0] * stride, bboxPreds[bboxBaseIdx + 1] * stride, bboxPreds[bboxBaseIdx + 2] * stride, bboxPreds[bboxBaseIdx + 3] * stride);
+            var bbox = new RectangleF(x - x0diff, y - y0diff, x0diff + x1diff, y0diff + y1diff);
+            if (kpsPreds is not null)
+            {
+                var kpsBaseIdx = anchorIdx * 10;
+                var kps = Kps(kpsPreds.AsSpan(kpsBaseIdx, 10), x, y, stride);
+                returnValues.Add(new FaceDetectorResult(bbox, kps, scores[anchorIdx]));
+            }
+            else
+            {
+                returnValues.Add(new FaceDetectorResult(bbox, null, scores[anchorIdx]));
+            }
         }
 
-        bbox_preds *= stride;
-        kps_preds = kps_preds is not null ? kps_preds * stride : null;
-
-        var anchorCenters = GetAnchorCenters(inputSize, stride, _modelParameters.NumAnchors);
-
-        var pos_inds = np.array(indicesAboveThreshold.ToArray());
-        anchorCenters = anchorCenters[pos_inds];
-        bbox_preds = bbox_preds[pos_inds];
-        scoresNd = scoresNd[pos_inds];
-
-        var bboxes = Distance2Bbox(anchorCenters, bbox_preds);
-        NDArray? kpss = null;
-
-        if (kps_preds is not null)
-        {
-            kps_preds = kps_preds[pos_inds];
-            kpss = Distance2Kps(anchorCenters, kps_preds);
-            kpss = kpss.reshape(kpss.shape[0], -1, 2);
-        }
-
-        return (scoresNd, bboxes, kpss);
+        return returnValues;
     }
 
     private NDArray GetAnchorCenters(Size inputSize, int stride, int numAnchors)
