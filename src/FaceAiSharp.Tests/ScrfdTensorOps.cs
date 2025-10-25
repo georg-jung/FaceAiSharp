@@ -3,7 +3,6 @@
 
 using NumSharp;
 using SixLabors.ImageSharp;
-using Xunit.Sdk;
 
 namespace FaceAiSharp.Tests;
 
@@ -16,8 +15,17 @@ public class ScrfdTensorOps
     {
         var numSharpRes = GenerateAnchorCentersNumSharp(inputWidth, inputHeight, stride, numAnchors);
         var numSharpArray = numSharpRes.Data<float>().ToArray();
-        var x = numSharpRes.Shape;
-        var ours = ScrfdDetector.GenerateAnchorCenters(new Size(inputWidth, inputHeight), stride, numAnchors);
+        var anchorCenterCnt = (inputWidth / stride) * (inputHeight / stride) * numAnchors;
+        Assert.Equal(anchorCenterCnt * 2, numSharpArray.Length);
+
+        var ours = new float[anchorCenterCnt * 2];
+        for (var anchorIdx = 0; anchorIdx < anchorCenterCnt; anchorIdx++)
+        {
+            var (x, y) = ScrfdDetector.GetAnchorCenter(new Size(inputWidth, inputHeight), stride, numAnchors, anchorIdx);
+            ours[(anchorIdx * 2) + 0] = x;
+            ours[(anchorIdx * 2) + 1] = y;
+        }
+
         Assert.Equal(numSharpArray, ours);
     }
 

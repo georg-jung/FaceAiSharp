@@ -6,8 +6,6 @@ using BenchmarkDotNet.Attributes;
 using FaceAiSharp;
 using FaceAiSharp.Extensions;
 using FaceONNX;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -37,21 +35,15 @@ public class Scrfd
             false);
 
         _preprocImg = x.Image;
-        var opts = new MemoryCacheOptions();
-        var iopts = Options.Create(opts);
-        var c1 = new MemoryCache(iopts);
-        var c2 = new MemoryCache(iopts);
         _imgTensor = ScrfdDetector.CreateImageTensor(_preprocImg);
         _scrfd1 = new(
-            c1,
-            new()
+            new ScrfdDetectorOptions()
             {
                 ModelPath = @"C:\Users\georg\OneDrive\Dokumente\ScrfdOnnx\scrfd_2.5g_bnkps_shape640x640.onnx",
                 AutoResizeInputToModelDimensions = false,
             });
 
         _scrfd2 = new(
-            c2,
             new()
             {
                 ModelPath = @"C:\Users\georg\OneDrive\Dokumente\ScrfdOnnx\scrfd_2.5g_bnkps_dyn.onnx",

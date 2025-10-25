@@ -1,14 +1,11 @@
 // Copyright (c) Georg Jung. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.CommandLine;
 using System.Data;
 using System.Diagnostics;
 using System.Threading.Channels;
 using FaceAiSharp.Extensions;
 using LiteDB;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
 using Microsoft.ML.OnnxRuntime;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -20,7 +17,6 @@ internal sealed class GenerateEmbeddings : IDisposable
     private readonly SessionOptions _embedderSessOpts;
     private readonly IFaceEmbeddingsGenerator _emb;
     private readonly IFaceDetector _det;
-    private readonly IMemoryCache _cache;
     private readonly DirectoryInfo _dataset;
     private readonly FileInfo _db;
     private readonly string _dbEmbeddingCollectionName;
@@ -42,13 +38,8 @@ internal sealed class GenerateEmbeddings : IDisposable
             },
             _embedderSessOpts);
 
-        var opts = new MemoryCacheOptions();
-        var iopts = Options.Create(opts);
-        _cache = new MemoryCache(iopts);
-
         _det = new ScrfdDetector(
-            _cache,
-            new()
+            new ScrfdDetectorOptions()
             {
                 ModelPath = scrfdModel.FullName,
             });
@@ -129,7 +120,6 @@ internal sealed class GenerateEmbeddings : IDisposable
         _embedderSessOpts.Dispose();
         (_emb as IDisposable)?.Dispose();
         (_det as IDisposable)?.Dispose();
-        _cache.Dispose();
     }
 
     private Image<Rgb24> PreprocessAngle(string filePath)

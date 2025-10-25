@@ -4,10 +4,8 @@
 using System.Runtime.CompilerServices;
 using FaceAiSharp.Extensions;
 using FaceAiSharp.Simd;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
-using NumSharp;
 using SimpleSimd;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -19,19 +17,16 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
 {
     private readonly InferenceSession _session;
     private readonly ModelParameters _modelParameters;
-    private readonly IMemoryCache _cache;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ScrfdDetector"/> class.
     /// </summary>
-    /// <param name="cache">An <see cref="IMemoryCache"/> instance that is used internally by <see cref="ScrfdDetector"/>.</param>
     /// <param name="options">Provide a path to the ONNX model file and customize the behaviour of <see cref="ScrfdDetector"/>.</param>
     /// <param name="sessionOptions"><see cref="SessionOptions"/> to customize OnnxRuntime's behaviour.</param>
-    public ScrfdDetector(IMemoryCache cache, ScrfdDetectorOptions options, SessionOptions? sessionOptions = null)
+    public ScrfdDetector(ScrfdDetectorOptions options, SessionOptions? sessionOptions = null)
     {
         _ = options?.ModelPath ?? throw new ArgumentException("A model path is required in options.ModelPath.", nameof(options));
         Options = options;
-        _cache = cache;
         _session = sessionOptions is null ? new(options.ModelPath) : new(options.ModelPath, sessionOptions);
 
         _modelParameters = DetermineModelParameters();
@@ -44,11 +39,10 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
     /// <param name="cache">An <see cref="IMemoryCache"/> instance that is used internally by <see cref="ScrfdDetector"/>.</param>
     /// <param name="options">Options to customize the behaviour of <see cref="ScrfdDetector"/>. If options.ModelPath is set, it is ignored. The model provided in <paramref name="model"/> takes precedence.</param>
     /// <param name="sessionOptions"><see cref="SessionOptions"/> to customize OnnxRuntime's behaviour.</param>
-    public ScrfdDetector(byte[] model, IMemoryCache cache, ScrfdDetectorOptions? options = null, SessionOptions? sessionOptions = null)
+    public ScrfdDetector(byte[] model, ScrfdDetectorOptions? options = null, SessionOptions? sessionOptions = null)
     {
         _ = model ?? throw new ArgumentNullException(nameof(model));
         Options = options ?? new();
-        _cache = cache;
         _session = sessionOptions is null ? new(model) : new(model, sessionOptions);
 
         _modelParameters = DetermineModelParameters();
@@ -108,7 +102,7 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
     /// <summary>
     /// Filter out duplicate detections (multiple boxes describing roughly the same area) using non max suppression.
     /// </summary>
-    /// <param name="dets">All detections with their scores.</param>
+    /// <param name="orderedResults">All detections.</param>
     /// <param name="thresh">Non max suppression threshold.</param>
     /// <returns>Which detections to keep.</returns>
     internal static List<int> NonMaxSupression(IReadOnlyList<FaceDetectorResult> orderedResults, float thresh)
@@ -176,7 +170,7 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
         var strideResults = new List<FaceDetectorResult>();
         foreach (var (idx, stride) in _modelParameters.FeatStrideFpn.Select((val, idx) => (idx, val)))
         {
-            var strideRes = HandleStride(idx, stride, outputs.ToList(), imgSize, _modelParameters.Batching);
+            var strideRes = HandleStride(idx, stride, outputs.ToList(), imgSize);
             strideResults.AddRange(strideRes ?? []);
         }
 
@@ -192,36 +186,12 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
 
     internal static (int X, int Y) GetAnchorCenter(Size inputSize, int stride, int numAnchors, int anchorIdx)
     {
-        var height = inputSize.Height / stride;
         var width = inputSize.Width / stride;
         var anchorsPerRow = width * numAnchors;
         var y = anchorIdx / anchorsPerRow;
         var x = (anchorIdx % anchorsPerRow) / numAnchors;
 
         return (x * stride, y * stride);
-    }
-
-    internal static float[] GenerateAnchorCenters(Size inputSize, int stride, int numAnchors)
-    {
-        // see also https://github.com/deepinsight/insightface/blob/f091989568cad5a0244e05be1b8d58723de210b0/detection/scrfd/tools/scrfd.py#L185
-        var height = inputSize.Height / stride;
-        var width = inputSize.Width / stride;
-        var data = new float[height * width * numAnchors * 2];
-        var idx = 0;
-
-        for (var y = 0; y < height; y++)
-        {
-            for (var x = 0; x < width; x++)
-            {
-                for (var a = 0; a < numAnchors; a++)
-                {
-                    data[idx++] = x * stride;
-                    data[idx++] = y * stride;
-                }
-            }
-        }
-
-        return data;
     }
 
     /// <summary>
@@ -244,41 +214,15 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
         return indices;
     }
 
-    private static NDArray Distance2Bbox(NDArray points, NDArray distance)
-    {
-        var x1 = points[":, 0"] - distance[":, 0"];
-        var y1 = points[":, 1"] - distance[":, 1"];
-        var x2 = points[":, 0"] + distance[":, 2"];
-        var y2 = points[":, 1"] + distance[":, 3"];
-        return np.stack(new[] { x1, y1, x2, y2 }, axis: -1);
-    }
-
-    private static NDArray Distance2Kps(NDArray points, NDArray distance)
-    {
-        var preds = new NDArray[distance.shape[1]];
-        for (var i = 0; i < distance.shape[1]; i += 2)
-        {
-            var px = points[Slice.All, i % 2] + distance[Slice.All, i];
-            var py = points[Slice.All, (i % 2) + 1] + distance[Slice.All, i + 1];
-            preds[i] = px;
-            preds[i + 1] = py;
-        }
-
-        return np.stack(preds, axis: -1);
-    }
-
-    private static IReadOnlyList<PointF> Kps(ReadOnlySpan<float> flatKps, int anchorX, int anchorY, int stride)
-    {
-        return [
+    private static IReadOnlyList<PointF> Kps(ReadOnlySpan<float> flatKps, int anchorX, int anchorY, int stride) => [
             new(anchorX + (flatKps[0] * stride), anchorY + (flatKps[1] * stride)),
             new(anchorX + (flatKps[2] * stride), anchorY + (flatKps[3] * stride)),
             new(anchorX + (flatKps[4] * stride), anchorY + (flatKps[5] * stride)),
             new(anchorX + (flatKps[6] * stride), anchorY + (flatKps[7] * stride)),
             new(anchorX + (flatKps[8] * stride), anchorY + (flatKps[9] * stride)),
         ];
-    }
 
-    private List<FaceDetectorResult>? HandleStride(int strideIndex, int stride, IReadOnlyList<NamedOnnxValue> outputs, Size inputSize, bool batched)
+    private List<FaceDetectorResult>? HandleStride(int strideIndex, int stride, IReadOnlyList<NamedOnnxValue> outputs, Size inputSize)
     {
         var thresh = Options.ConfidenceThreshold;
         var scores = outputs[strideIndex].ToArray<float>();
@@ -313,15 +257,6 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
         return returnValues;
     }
 
-    private NDArray GetAnchorCenters(Size inputSize, int stride, int numAnchors)
-    => _cache.GetOrCreate((inputSize, stride, numAnchors), cacheEntry =>
-    {
-        cacheEntry.SetSlidingExpiration(TimeSpan.FromMinutes(20));
-        var floatData = GenerateAnchorCenters(inputSize, stride, numAnchors);
-        var nda = new NDArray(floatData, new Shape(floatData.Length / 2, 2));
-        return nda;
-    })!;
-
     private ModelParameters DetermineModelParameters()
     {
         var inputMeta = _session.InputMetadata;
@@ -339,10 +274,10 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
 
         var (fmc, stridesFpn, kps, numAnchors) = _session.OutputMetadata.Values.Count() switch
         {
-            6 => (3, new[] { 8, 16, 32 }, false, 2),
-            9 => (3, new[] { 8, 16, 32 }, true, 2),
-            10 => (5, new[] { 8, 16, 32, 64, 128 }, false, 1),
-            15 => (5, new[] { 8, 16, 32, 64, 128 }, true, 1),
+            6 => (3, (int[])[8, 16, 32], false, 2),
+            9 => (3, [8, 16, 32], true, 2),
+            10 => (5, [8, 16, 32, 64, 128], false, 1),
+            15 => (5, [8, 16, 32, 64, 128], true, 1),
             int cnt => throw new NotSupportedException($"{cnt} output tensors are not supported for SCRFD models."),
         };
 

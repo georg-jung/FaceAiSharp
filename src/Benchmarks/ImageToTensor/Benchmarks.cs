@@ -6,8 +6,6 @@ using BenchmarkDotNet.Attributes;
 using Benchmarks.ImageToTensor;
 using FaceAiSharp;
 using FaceAiSharp.Extensions;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;

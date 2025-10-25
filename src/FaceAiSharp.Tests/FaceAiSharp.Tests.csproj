@@ -16,6 +16,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Microsoft.ML.OnnxRuntime" />
+    <PackageReference Include="NumSharp" />
     <PackageReference Include="Shouldly" />
     <PackageReference Include="Verify.Xunit" />
     <PackageReference Include="xunit" />

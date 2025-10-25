@@ -25,9 +25,7 @@ This package contains just FaceAiSharp's managed code and does not include any O
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Diagnostics" />
     <PackageReference Include="MathNet.Numerics" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
     <PackageReference Include="Microsoft.ML.OnnxRuntime.Managed" />
-    <PackageReference Include="NumSharp" />
     <PackageReference Include="SimpleSIMD" />
     <PackageReference Include="SixLabors.ImageSharp" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" />

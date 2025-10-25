@@ -4,8 +4,6 @@
 using System.Diagnostics;
 using FaceAiSharp.Extensions;
 using LiteDB;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
 using Microsoft.ML.OnnxRuntime;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -17,7 +15,6 @@ internal class CountClosedEyes
     private readonly FileInfo _db;
     private readonly DirectoryInfo _dataset;
     private readonly SessionOptions _dmlSessOpts;
-    private readonly MemoryCache _cache;
     private readonly ScrfdDetector _det;
     private readonly OpenVinoOpenClosedEye0001 _eyeState;
 
@@ -32,13 +29,8 @@ internal class CountClosedEyes
         };
         _dmlSessOpts.AppendExecutionProvider_DML();
 
-        var opts = new MemoryCacheOptions();
-        var iopts = Options.Create(opts);
-        _cache = new MemoryCache(iopts);
-
         _det = new ScrfdDetector(
-            _cache,
-            new()
+            new ScrfdDetectorOptions()
             {
                 ModelPath = scrfdModel.FullName,
             });
