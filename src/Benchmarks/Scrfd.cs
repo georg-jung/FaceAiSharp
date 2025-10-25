@@ -1,11 +1,10 @@
 // Copyright (c) Georg Jung. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Numerics;
+using System.Reflection;
 using BenchmarkDotNet.Attributes;
 using FaceAiSharp;
 using FaceAiSharp.Extensions;
-using FaceONNX;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -19,7 +18,7 @@ public class Scrfd
     private readonly Image _img = Image.Load(@"C:\Users\georg\facePics\avGroup.jpg");
     private readonly Image<Rgb24> _preprocImg;
     private readonly ScrfdDetector _scrfd1;
-    private readonly ScrfdDetector _scrfd2;
+    /* private readonly ScrfdDetector _scrfd2; */
     private readonly DenseTensor<float> _imgTensor;
 
     public Scrfd()
@@ -36,14 +35,15 @@ public class Scrfd
 
         _preprocImg = x.Image;
         _imgTensor = ScrfdDetector.CreateImageTensor(_preprocImg);
+        var modelPath = Path.Combine(GetExeDir(), "onnx", "scrfd_2.5g_kps.onnx");
         _scrfd1 = new(
             new ScrfdDetectorOptions()
             {
-                ModelPath = @"C:\Users\georg\OneDrive\Dokumente\ScrfdOnnx\scrfd_2.5g_bnkps_shape640x640.onnx",
+                ModelPath = modelPath,
                 AutoResizeInputToModelDimensions = false,
             });
 
-        _scrfd2 = new(
+        /*_scrfd2 = new(
             new()
             {
                 ModelPath = @"C:\Users\georg\OneDrive\Dokumente\ScrfdOnnx\scrfd_2.5g_bnkps_dyn.onnx",
@@ -52,12 +52,14 @@ public class Scrfd
             new()
             {
                 ExecutionMode = Microsoft.ML.OnnxRuntime.ExecutionMode.ORT_PARALLEL,
-            });
+            });*/
     }
 
     [Benchmark]
     public IReadOnlyCollection<FaceDetectorResult> First() => _scrfd1.Detect(_imgTensor, new Size(640, 640), 1.0f);
 
-    [Benchmark]
-    public IReadOnlyCollection<FaceDetectorResult> Second() => _scrfd2.Detect(_imgTensor, new Size(640, 640), 1.0f);
+    /*[Benchmark]
+    public IReadOnlyCollection<FaceDetectorResult> Second() => _scrfd2.Detect(_imgTensor, new Size(640, 640), 1.0f);*/
+
+    private static string GetExeDir() => Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
 }
