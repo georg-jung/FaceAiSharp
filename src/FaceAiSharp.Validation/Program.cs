@@ -6,47 +6,58 @@ using FaceAiSharp.Validation;
 
 var rc = new RootCommand("FaceAiSharp validation tools");
 
-var db = new Option<FileInfo>(
-    name: "--db",
-    description: "File to use as db to store results and for continuation",
-    getDefaultValue: () => new FileInfo("faceaisharp-validation.litedb"));
-rc.AddGlobalOption(db);
+var db = new Option<FileInfo>("--db")
+{
+    Description = "File to use as db to store results and for continuation",
+    DefaultValueFactory = _ => new FileInfo("faceaisharp-validation.litedb"),
+    Recursive = true,
+};
+rc.Options.Add(db);
 
-var dbEmbeddingCollectionName = new Option<string>(
-    name: "---db-embedding-collection-name",
-    getDefaultValue: () => "ArcfaceEmbeddings");
+var dbEmbeddingCollectionName = new Option<string>("---db-embedding-collection-name")
+{
+    DefaultValueFactory = _ => "ArcfaceEmbeddings",
+};
 
-var dataset = new Option<DirectoryInfo>(
-    name: "--dataset",
-    getDefaultValue: () => new DirectoryInfo(@"C:\Users\georg\Downloads\lfw\lfw"));
+var dataset = new Option<DirectoryInfo>("--dataset")
+{
+    DefaultValueFactory = _ => new DirectoryInfo(@"C:\Users\georg\Downloads\lfw\lfw"),
+};
 
-var pairsFile = new Option<FileInfo>(
-    name: "--pairs-file",
-    getDefaultValue: () => new FileInfo(@"C:\Users\georg\Downloads\lfw\pairs.txt"));
+var pairsFile = new Option<FileInfo>("--pairs-file")
+{
+    DefaultValueFactory = _ => new FileInfo(@"C:\Users\georg\Downloads\lfw\pairs.txt"),
+};
 
-var arcfaceModel = new Option<FileInfo>(
-    name: "--arcface-model",
-    getDefaultValue: () => new FileInfo(@"C:\Users\georg\facePics\arcfaceresnet100-8\resnet100\resnet100.onnx"));
+var arcfaceModel = new Option<FileInfo>("--arcface-model")
+{
+    DefaultValueFactory = _ => new FileInfo(@"C:\Users\georg\facePics\arcfaceresnet100-8\resnet100\resnet100.onnx"),
+};
 
-var scrfdModel = new Option<FileInfo>(
-    name: "--scrfd-model",
-    getDefaultValue: () => new FileInfo(@"C:\Users\georg\OneDrive\Dokumente\BlazorFace\ScrfdOnnx\scrfd_2.5g_bnkps.onnx"));
+var scrfdModel = new Option<FileInfo>("--scrfd-model")
+{
+    DefaultValueFactory = _ => new FileInfo(@"C:\Users\georg\OneDrive\Dokumente\BlazorFace\ScrfdOnnx\scrfd_2.5g_bnkps.onnx"),
+};
 
-var eyeStateModel = new Option<FileInfo>(
-    name: "--eyestate-model",
-    getDefaultValue: () => new FileInfo(@"C:\Users\georg\OneDrive\Dokumente\BlazorFace\openvino_open-closed-eye-0001\open_closed_eye.onnx"));
+var eyeStateModel = new Option<FileInfo>("--eyestate-model")
+{
+    DefaultValueFactory = _ => new FileInfo(@"C:\Users\georg\OneDrive\Dokumente\BlazorFace\openvino_open-closed-eye-0001\open_closed_eye.onnx"),
+};
 
-var threshold = new Option<float>(
-    name: "--threshold",
-    getDefaultValue: () => 0.29f);
+var threshold = new Option<float>("--threshold")
+{
+    DefaultValueFactory = _ => 0.29f,
+};
 
-var binJpegs = new Option<DirectoryInfo>(
-    name: "--bin-jpegs");
-binJpegs.IsRequired = true;
+var binJpegs = new Option<DirectoryInfo>("--bin-jpegs")
+{
+    Required = true,
+};
 
-var preprocMode = new Option<GenerateEmbeddings.PreprocessingMode>(
-    name: "--prprocessing-mode",
-    getDefaultValue: () => GenerateEmbeddings.PreprocessingMode.AffineTransform);
+var preprocMode = new Option<GenerateEmbeddings.PreprocessingMode>("--prprocessing-mode")
+{
+    DefaultValueFactory = _ => GenerateEmbeddings.PreprocessingMode.AffineTransform,
+};
 
 var generateEmbeddings = new Command("generate-embeddings") { dataset, arcfaceModel, scrfdModel, dbEmbeddingCollectionName, pairsFile, preprocMode };
 
@@ -61,39 +72,64 @@ var renameModelzooBinJpegs = new Command("rename-modelzoo-bin-jpegs") { binJpegs
 #pragma warning disable SA1116 // Split parameters should start on line after declaration
 #pragma warning disable SA1117 // Parameters should be on same line or separate lines
 
-generateEmbeddings.SetHandler(async (dataset, db, arcfaceModel, scrfdModel, dbEmbeddingCollectionName, pairsFile, preprocMode) =>
+generateEmbeddings.SetAction(async (ParseResult parseResult, CancellationToken cancellationToken) =>
 {
-    using var cmd = new GenerateEmbeddings(dataset, db, arcfaceModel, scrfdModel, dbEmbeddingCollectionName, pairsFile, preprocMode);
+    using var cmd = new GenerateEmbeddings(
+        parseResult.GetRequiredValue(dataset),
+        parseResult.GetRequiredValue(db),
+        parseResult.GetRequiredValue(arcfaceModel),
+        parseResult.GetRequiredValue(scrfdModel),
+        parseResult.GetRequiredValue(dbEmbeddingCollectionName),
+        parseResult.GetRequiredValue(pairsFile),
+        parseResult.GetRequiredValue(preprocMode));
     await cmd.Invoke();
-}, dataset, db, arcfaceModel, scrfdModel, dbEmbeddingCollectionName, pairsFile, preprocMode);
-rc.AddCommand(generateEmbeddings);
+    return 0;
+});
+rc.Subcommands.Add(generateEmbeddings);
 
-calcAllDistances.SetHandler((db, dbEmbeddingCollectionName, threshold) =>
+calcAllDistances.SetAction((ParseResult parseResult, CancellationToken cancellationToken) =>
 {
-    var calc = new CalculateAllDistances(db, dbEmbeddingCollectionName, threshold);
+    var calc = new CalculateAllDistances(
+        parseResult.GetRequiredValue(db),
+        parseResult.GetRequiredValue(dbEmbeddingCollectionName),
+        parseResult.GetRequiredValue(threshold));
     calc.Invoke();
-}, db, dbEmbeddingCollectionName, threshold);
-rc.AddCommand(calcAllDistances);
+    return Task.FromResult(0);
+});
+rc.Subcommands.Add(calcAllDistances);
 
-calcPairsDistances.SetHandler((db, dbEmbeddingCollectionName, threshold, pairsFile) =>
+calcPairsDistances.SetAction((ParseResult parseResult, CancellationToken cancellationToken) =>
 {
-    var calc = new CalculatePairsDistances(db, dbEmbeddingCollectionName, threshold, pairsFile);
+    var calc = new CalculatePairsDistances(
+        parseResult.GetRequiredValue(db),
+        parseResult.GetRequiredValue(dbEmbeddingCollectionName),
+        parseResult.GetRequiredValue(threshold),
+        parseResult.GetRequiredValue(pairsFile));
     calc.Invoke();
-}, db, dbEmbeddingCollectionName, threshold, pairsFile);
-rc.AddCommand(calcPairsDistances);
+    return Task.FromResult(0);
+});
+rc.Subcommands.Add(calcPairsDistances);
 
-countClosedEyes.SetHandler((dataset, db, scrfdModel, eyeStateModel) =>
+countClosedEyes.SetAction((ParseResult parseResult, CancellationToken cancellationToken) =>
 {
-    var cnt = new CountClosedEyes(dataset, db, scrfdModel, eyeStateModel);
+    var cnt = new CountClosedEyes(
+        parseResult.GetRequiredValue(dataset),
+        parseResult.GetRequiredValue(db),
+        parseResult.GetRequiredValue(scrfdModel),
+        parseResult.GetRequiredValue(eyeStateModel));
     cnt.Invoke();
-}, dataset, db, scrfdModel, eyeStateModel);
-rc.AddCommand(countClosedEyes);
+    return Task.FromResult(0);
+});
+rc.Subcommands.Add(countClosedEyes);
 
-renameModelzooBinJpegs.SetHandler((binJpegs, pairsFile) =>
+renameModelzooBinJpegs.SetAction((ParseResult parseResult, CancellationToken cancellationToken) =>
 {
-    var ren = new RenameModelzooBinJpegs(binJpegs, pairsFile);
+    var ren = new RenameModelzooBinJpegs(
+        parseResult.GetRequiredValue(binJpegs),
+        parseResult.GetRequiredValue(pairsFile));
     ren.Invoke();
-}, binJpegs, pairsFile);
-rc.AddCommand(renameModelzooBinJpegs);
+    return Task.FromResult(0);
+});
+rc.Subcommands.Add(renameModelzooBinJpegs);
 
-return await rc.InvokeAsync(args);
+return await rc.Parse(args).InvokeAsync();
