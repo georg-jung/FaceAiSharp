@@ -28,7 +28,7 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 9.x # global-json-file: wouldn't use the latestMinor with setup-dotnet@v4
-    - uses: dotnet/nbgv@v0.4
+    - uses: dotnet/nbgv@v0.5
       id: nbgv
     - run: dotnet restore /p:ContinuousIntegrationBuild=true
     - run: dotnet build -c Release --no-restore /p:ContinuousIntegrationBuild=true
