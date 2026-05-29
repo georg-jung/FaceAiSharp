@@ -23,15 +23,17 @@ jobs:
       actions: read          # for CodeQL
       contents: read
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
         lfs: true
     - name: Setup dotnet
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: 10.x # global-json-file: wouldn't use the latestMinor with setup-dotnet@v4
-    - uses: dotnet/nbgv@v0.4
+        dotnet-version: |
+          8.x
+          10.x
+    - uses: dotnet/nbgv@v0.5
       id: nbgv
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3

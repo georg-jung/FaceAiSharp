@@ -20,15 +20,17 @@ jobs:
     permissions:
       contents: read
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
         lfs: true
     - name: Setup dotnet
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: 10.x # global-json-file: wouldn't use the latestMinor with setup-dotnet@v4
-    - uses: dotnet/nbgv@v0.4
+        dotnet-version: |
+          8.x
+          10.x
+    - uses: dotnet/nbgv@v0.5
       id: nbgv
     - run: dotnet restore /p:ContinuousIntegrationBuild=true
     - run: dotnet build -c Release --no-restore /p:ContinuousIntegrationBuild=true
@@ -49,7 +51,7 @@ jobs:
         targetdir: coveragereport
         reporttypes: "Html;MarkdownSummaryGithub"
         license: ${{ secrets.ReportGeneratorLicense }}
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       with:
         name: CoverageReport-${{ steps.nbgv.outputs.Version }}
         path: coveragereport
@@ -58,12 +60,12 @@ jobs:
       shell: bash
     - name: Upload coverage reports to Codecov
       if: ${{ env.CODECOV_TOKEN }}
-      uses: codecov/codecov-action@v5
+      uses: codecov/codecov-action@v6
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         slug: georg-jung/FaceAiSharp
     - run: dotnet pack -c Release --no-restore --no-build /p:ContinuousIntegrationBuild=true
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       with:
         name: nupkg
         path: bin/Packages/Release/**/*
