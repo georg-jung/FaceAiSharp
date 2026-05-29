@@ -3,8 +3,8 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
+using System.Numerics.Tensors;
 using System.Runtime.CompilerServices;
-using SimpleSimd;
 using SixLabors.ImageSharp;
 
 namespace FaceAiSharp.Extensions;
@@ -25,26 +25,11 @@ public static class GeometryExtensions
     /// <returns>Euclidean distance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static float EuclideanDistance(this float[] x, float[] y)
-    {
-        if (x.Length != y.Length)
-        {
-            throw new ArgumentException("The Length of the two float[] arrays must match.", nameof(y));
-        }
-
-        var l = x.Length;
-        float sum = 0.0f;
-        for (var i = 0; i < l; i++)
-        {
-            var dist = x[i] - y[i];
-            sum += dist * dist;
-        }
-
-        return (float)Math.Sqrt(sum);
-    }
+        => TensorPrimitives.Distance(x.AsSpan(), y.AsSpan());
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static float EuclideanDistance(this PointF x, PointF y)
-        => EuclideanDistance(new[] { x.X, x.Y }, new[] { y.X, y.Y });
+        => EuclideanDistance([x.X, x.Y], [y.X, y.Y]);
 
     /// <summary>
     /// Gets a similarity measure between two points based on euclidean distance.
@@ -108,7 +93,7 @@ public static class GeometryExtensions
     /// <returns>The dot product.</returns>
     public static float Dot(this float[] x, float[] y)
     {
-        return SimdOps<float>.Dot(x, y);
+        return TensorPrimitives.Dot(x, y);
     }
 
     /// <summary>
