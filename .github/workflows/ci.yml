@@ -16,9 +16,14 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     permissions:
+      id-token: write
+      attestations: write
+      artifact-metadata: write
       contents: read
+      packages: write
+    timeout-minutes: 15
     steps:
     - uses: actions/checkout@v6
       with:
@@ -65,7 +70,15 @@ jobs:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         slug: georg-jung/FaceAiSharp
     - run: dotnet pack -c Release --no-restore --no-build /p:ContinuousIntegrationBuild=true
+    
     - uses: actions/upload-artifact@v7
       with:
         name: nupkg
         path: bin/Packages/Release/**/*
+    
+    - uses: actions/attest@v4
+      if: github.ref_name == github.event.repository.default_branch || github.ref_type == 'tag'
+      with:
+        subject-path: |
+          bin/Packages/Release/**/*.nupkg
+          bin/Packages/Release/**/*.snupkg
