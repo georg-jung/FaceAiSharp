@@ -23,7 +23,7 @@ jobs:
       actions: read          # for CodeQL
       contents: read
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
         lfs: true
