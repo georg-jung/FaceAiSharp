@@ -30,7 +30,7 @@ jobs:
         fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
         lfs: true
     - name: Setup dotnet
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@v6
       with:
         dotnet-version: |
           8.x
