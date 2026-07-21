@@ -67,7 +67,7 @@ public class NonMaxSupressionCorrectness
 
     private static void TestInput(NDArray input, float thresh)
     {
-        var res1 = ScrfdDetector.NonMaxSupression(NDArray2FaceDetectorResults(input), thresh);
+        var res1 = ScrfdDetector.NonMaxSuppression(NDArray2FaceDetectorResults(input), thresh);
         var res2 = FromScrfdPy(input, thresh);
         Assert.Equal(res1, res2);
     }

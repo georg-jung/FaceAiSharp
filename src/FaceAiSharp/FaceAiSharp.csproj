@@ -12,6 +12,7 @@
     <AssemblyName>FaceAiSharp</AssemblyName>
     <Authors>Georg Jung</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
 
     <PackageTags>face;face-detection;face-recognition;scrfd;arcface;onnx;onnxruntime;ai;artificial-intelligence;ml;machine-learning;openvino;insightface;facial-landmarks-detection;eye-state-detection;eyes;lfw;widerface;face-ai</PackageTags>
     <PackageProjectUrl>https://github.com/georg-jung/FaceAiSharp</PackageProjectUrl>
@@ -21,6 +22,10 @@ FaceAiSharp allows you to work with face-related computer vision tasks easily. I
 This package contains just FaceAiSharp's managed code and does not include any ONNX models. Take a look at FaceAiSharp.Bundle for a batteries-included package with everything you need to get started.
     </PackageDescription>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Diagnostics" />

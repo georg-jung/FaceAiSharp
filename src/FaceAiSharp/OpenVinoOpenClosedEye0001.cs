@@ -1,7 +1,6 @@
 // Copyright (c) Georg Jung. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Diagnostics;
 using FaceAiSharp.Extensions;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
@@ -64,7 +63,10 @@ public sealed class OpenVinoOpenClosedEye0001 : IEyeStateDetector, IDisposable
         using var outputs = _session.Run(inputs);
         var firstOut = outputs.First();
         var tens = firstOut.Value as DenseTensor<float> ?? firstOut.AsTensor<float>().ToDenseTensor();
-        Debug.Assert(tens.Length % 2 == 0, "Output tensor length is invalid.");
+        if (tens.Length % 2 != 0)
+        {
+            throw new InvalidOperationException($"The output tensor has an invalid length of {tens.Length}. A multiple of 2 was expected. The model used is probably not supported.");
+        }
 
         var span = tens.Buffer.Span;
         return span[0] < span[1];

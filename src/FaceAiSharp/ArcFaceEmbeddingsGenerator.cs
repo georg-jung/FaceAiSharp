@@ -1,7 +1,6 @@
 // Copyright (c) Georg Jung. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Diagnostics;
 using System.Numerics;
 using CommunityToolkit.Diagnostics;
 using FaceAiSharp.Extensions;
@@ -198,7 +197,10 @@ public sealed class ArcFaceEmbeddingsGenerator : IFaceEmbeddingsGenerator, IDisp
         using var outputs = _session.Run(inputs);
         var firstOut = outputs.First();
         var tens = firstOut.Value as DenseTensor<float> ?? firstOut.AsTensor<float>().ToDenseTensor();
-        Debug.Assert(tens.Length % 512 == 0, "Output tensor length is invalid.");
+        if (tens.Length % 512 != 0)
+        {
+            throw new InvalidOperationException($"The output tensor has an invalid length of {tens.Length}. A multiple of 512 was expected. The model used is probably not supported.");
+        }
 
         var embSpan = tens.Buffer.Span;
         return GeometryExtensions.ToUnitLength(embSpan);
