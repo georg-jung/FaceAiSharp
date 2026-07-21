@@ -1,7 +1,6 @@
 // Copyright (c) Georg Jung. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Reflection;
 using Microsoft.ML.OnnxRuntime;
 
 namespace FaceAiSharp;
@@ -33,5 +32,7 @@ public static class FaceAiSharpBundleFactory
         return new OpenVinoOpenClosedEye0001(opt, sessionOptions);
     }
 
-    private static string GetExeDir() => Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+    /* AppContext.BaseDirectory works in single-file and self-contained deployments too,
+     * where Assembly.Location returns an empty string. */
+    private static string GetExeDir() => AppContext.BaseDirectory;
 }

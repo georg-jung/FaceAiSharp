@@ -37,7 +37,6 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
     /// Initializes a new instance of the <see cref="ScrfdDetector"/> class.
     /// </summary>
     /// <param name="model">An scrfd onnx model that supports facial landmarks ("kps").</param>
-    /// <param name="cache">An <see cref="IMemoryCache"/> instance that is used internally by <see cref="ScrfdDetector"/>.</param>
     /// <param name="options">Options to customize the behaviour of <see cref="ScrfdDetector"/>. If options.ModelPath is set, it is ignored. The model provided in <paramref name="model"/> takes precedence.</param>
     /// <param name="sessionOptions"><see cref="SessionOptions"/> to customize OnnxRuntime's behaviour.</param>
     public ScrfdDetector(byte[] model, ScrfdDetectorOptions? options = null, SessionOptions? sessionOptions = null)
@@ -90,7 +89,17 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
         return Detect(input, img.Size, scale);
     }
 
-    IReadOnlyList<PointF> IFaceLandmarksDetector.DetectLandmarks(Image<Rgb24> image) => DetectFaces(image).MaxBy(x => x.Confidence).Landmarks!;
+    IReadOnlyList<PointF> IFaceLandmarksDetector.DetectLandmarks(Image<Rgb24> image)
+    {
+        var faces = DetectFaces(image);
+        if (faces.Count == 0)
+        {
+            throw new ArgumentException("No faces could be found in the given image.", nameof(image));
+        }
+
+        var best = faces.MaxBy(x => x.Confidence);
+        return best.Landmarks ?? throw new NotSupportedException("The model used does not support facial landmarks.");
+    }
 
     PointF IFaceLandmarksDetector.GetLeftEyeCenter(IReadOnlyList<PointF> landmarks) => GetLeftEye(landmarks);
 
@@ -106,7 +115,7 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
     /// <param name="orderedResults">All detections.</param>
     /// <param name="thresh">Non max suppression threshold.</param>
     /// <returns>Which detections to keep.</returns>
-    internal static List<int> NonMaxSupression(IReadOnlyList<FaceDetectorResult> orderedResults, float thresh)
+    internal static List<int> NonMaxSuppression(IReadOnlyList<FaceDetectorResult> orderedResults, float thresh)
     {
         float[] x1 = [.. orderedResults.Select(x => x.Box.Left)];
         float[] x2 = [.. orderedResults.Select(x => x.Box.Right)];
@@ -167,11 +176,12 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
     {
         var inputs = new List<NamedOnnxValue> { NamedOnnxValue.CreateFromTensor(_modelParameters.InputName, input) };
         using var outputs = _session.Run(inputs);
+        var outputsList = outputs.ToList();
 
         var strideResults = new List<FaceDetectorResult>();
         foreach (var (idx, stride) in _modelParameters.FeatStrideFpn.Select((val, idx) => (idx, val)))
         {
-            var strideRes = HandleStride(idx, stride, outputs.ToList(), imgSize, scale);
+            var strideRes = HandleStride(idx, stride, outputsList, imgSize, scale);
             strideResults.AddRange(strideRes ?? []);
         }
 
@@ -181,7 +191,7 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
         }
 
         strideResults.Sort((a, b) => b.Confidence!.Value.CompareTo(a.Confidence!.Value));
-        var keepIdxs = NonMaxSupression(strideResults, Options.NonMaxSupressionThreshold);
+        var keepIdxs = NonMaxSuppression(strideResults, Options.NonMaxSuppressionThreshold);
         return [.. keepIdxs.Select(i => strideResults[i])];
     }
 
@@ -320,7 +330,17 @@ public record ScrfdDetectorOptions
     /// </summary>
     public bool AutoResizeInputToModelDimensions { get; set; } = true;
 
-    public float NonMaxSupressionThreshold { get; set; } = 0.4f;
+    public float NonMaxSuppressionThreshold { get; set; } = 0.4f;
+
+    /// <summary>
+    /// Gets or sets the non max suppression threshold. This is a misspelled alias for <see cref="NonMaxSuppressionThreshold"/>.
+    /// </summary>
+    [Obsolete($"Use {nameof(NonMaxSuppressionThreshold)} instead.")]
+    public float NonMaxSupressionThreshold
+    {
+        get => NonMaxSuppressionThreshold;
+        set => NonMaxSuppressionThreshold = value;
+    }
 
     public float ConfidenceThreshold { get; set; } = 0.5f;
 
