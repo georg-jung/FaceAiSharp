@@ -1,0 +1,108 @@
+name: Benchmarks
+
+on:
+  # Continuous benchmarking: track the regression suite over time on master.
+  # Benchmarks intentionally do NOT run on every PR/push - they take a while
+  # and shared runners are too noisy for a hard gate. Results are stored on
+  # the "benchmarks" branch and regressions trigger a commit comment alert.
+  push:
+    branches: [master]
+    paths:
+      - "src/FaceAiSharp/**"
+      - "src/FaceAiSharp.Bundle/**"
+      - "src/Benchmarks/**"
+      - "Directory.Packages.props"
+      - ".github/workflows/benchmarks.yml"
+  # On-demand runs (e.g. for a feature branch, or the full non-regression suites).
+  workflow_dispatch:
+    inputs:
+      categories:
+        description: "Space-separated list for --anyCategories. Empty runs benchmarks of all categories."
+        required: false
+        default: regression
+      filter:
+        description: "BenchmarkDotNet --filter glob, e.g. '*FaceDetection*'"
+        required: false
+        default: "*"
+      bdn-job:
+        description: BenchmarkDotNet job (accuracy/duration trade-off)
+        type: choice
+        options: [default, short, medium, long, dry]
+        default: short
+
+permissions:
+  contents: write
+
+concurrency:
+  group: benchmarks-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          lfs: true
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: |
+            8.x
+            10.x
+      - name: Run benchmarks
+        run: |
+          CATEGORIES="${{ github.event_name == 'push' && 'regression' || inputs.categories }}"
+          FILTER="${{ github.event_name == 'push' && '*' || inputs.filter }}"
+          BDN_JOB="${{ github.event_name == 'push' && 'default' || inputs['bdn-job'] }}"
+          dotnet run --project src/Benchmarks -c Release -f net10.0 -- \
+            --filter "${FILTER:-*}" \
+            ${CATEGORIES:+--anyCategories $CATEGORIES} \
+            --job "${BDN_JOB:-default}" \
+            --artifacts ./BenchmarkDotNet.Artifacts
+      - name: Combine reports
+        run: |
+          shopt -s nullglob
+          files=(./BenchmarkDotNet.Artifacts/results/*-report-full-compressed.json)
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "::error::No BenchmarkDotNet reports were produced. The --filter/--anyCategories selection probably matched no benchmarks."
+            exit 1
+          fi
+          echo "Combining ${#files[@]} report(s)"
+          jq -s '.[0].Benchmarks = ([.[].Benchmarks] | add) | .[0]' "${files[@]}" > combined-benchmark-report.json
+      - uses: actions/upload-artifact@v7
+        with:
+          name: benchmark-results
+          path: |
+            BenchmarkDotNet.Artifacts/results/
+            combined-benchmark-report.json
+      - name: Ensure benchmark data branch exists
+        if: github.event_name == 'push'
+        run: |
+          if ! git ls-remote --exit-code --heads origin benchmarks > /dev/null; then
+            hash=$(git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit-tree "$(git hash-object -t tree /dev/null)" -m "Initialize benchmark data branch")
+            git push origin "$hash:refs/heads/benchmarks"
+          fi
+      - name: Store result and check for regressions
+        if: github.event_name == 'push'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: FaceAiSharp regression suite
+          tool: benchmarkdotnet
+          output-file-path: combined-benchmark-report.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gh-pages-branch: benchmarks
+          benchmark-data-dir-path: dev/bench
+          auto-push: true
+          # Shared runners are noisy; alert only on clear regressions and never fail the build.
+          alert-threshold: 175%
+          comment-on-alert: true
+          fail-on-alert: false
+          summary-always: true

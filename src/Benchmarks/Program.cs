@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Diagnosers;
+using BenchmarkDotNet.Exporters.Json;
 using BenchmarkDotNet.Running;
 
 namespace Benchmarks;
@@ -10,18 +12,20 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        // required for OnnxRuntime
-        var opt = ManualConfig
+        var cfg = ManualConfig
             .Create(DefaultConfig.Instance)
-            .WithOptions(ConfigOptions.DisableOptimizationsValidator);
 
-        // var summary = BenchmarkRunner.Run<ImageSharp>();
-        // var summary = BenchmarkRunner.Run<FaceOnnxVsImageSharpAlignment>();
-        // var summary = BenchmarkRunner.Run<CropFirstVsResizeFirst>(args: args);
-        var summary = BenchmarkRunner.Run<Scrfd>(opt, args);
-        // var summary = BenchmarkRunner.Run<ImageToTensor.Benchmarks>(opt, args);
-        // var summary = BenchmarkRunner.Run<NonMaxSupression.Benchmarks>(opt, args);
-        // var summary = BenchmarkRunner.Run<ImageCloneVsMutate>(opt, args);
-        // var summary = BenchmarkRunner.Run<ScrfdGenerateAnchorCenters>(opt, args);
+            // required for OnnxRuntime
+            .WithOptions(ConfigOptions.DisableOptimizationsValidator)
+            .AddDiagnoser(MemoryDiagnoser.Default)
+
+            // the full-compressed json report is the format benchmark-action/github-action-benchmark parses
+            .AddExporter(JsonExporter.FullCompressed);
+
+        // Select benchmarks via command line, e.g.
+        //   dotnet run -c Release -- --anyCategories regression
+        //   dotnet run -c Release -- --filter '*FaceDetection*'
+        //   dotnet run -c Release -- --list flat
+        BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args, cfg);
     }
 }

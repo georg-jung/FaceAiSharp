@@ -16,8 +16,9 @@ namespace Benchmarks.ImageToTensor;
 [MemoryDiagnoser]
 public class Benchmarks
 {
-    private readonly Image _img = Image.Load(@"C:\Users\georg\facePics\avGroup.jpg");
+    private readonly Image _img = Image.Load(Regression.BenchmarkData.TestDataPath("jpgs", "obama_family.jpg"));
     private readonly Image<Rgb24> _preprocImg;
+    private readonly IDisposable? _preprocImgDisposable;
     private readonly Image<RgbaVector> _preprocImgRgbaVector;
 
     public Benchmarks()
@@ -34,7 +35,16 @@ public class Benchmarks
         var x2 = x.Image.CloneAs<RgbaVector>();
 
         _preprocImg = x.Image;
+        _preprocImgDisposable = x.ToDispose;
         _preprocImgRgbaVector = x2;
+    }
+
+    [GlobalCleanup]
+    public void Cleanup()
+    {
+        _preprocImgRgbaVector.Dispose();
+        _preprocImgDisposable?.Dispose();
+        _img.Dispose();
     }
 
     /*
