@@ -11,7 +11,7 @@ namespace Benchmarks;
 [MemoryDiagnoser]
 public class CropFirstVsResizeFirst
 {
-    private readonly Image _img = Image.Load(@"C:\Users\georg\OneDrive\Bilder\20160111-0162_GJ.jpg");
+    private readonly Image _img = Image.Load(Regression.BenchmarkData.TestDataPath("jpgs", "biden_7mpx.jpg"));
     private readonly Rectangle _crop = new(20, 50, 1000, 2000);
 
     public static Image ResizeFirst(Image sourceImage, Rectangle sourceArea, int extractedMaxEdgeSize)

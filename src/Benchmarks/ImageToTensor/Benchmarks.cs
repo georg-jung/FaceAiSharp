@@ -16,7 +16,7 @@ namespace Benchmarks.ImageToTensor;
 [MemoryDiagnoser]
 public class Benchmarks
 {
-    private readonly Image _img = Image.Load(@"C:\Users\georg\facePics\avGroup.jpg");
+    private readonly Image _img = Image.Load(Regression.BenchmarkData.TestDataPath("jpgs", "obama_family.jpg"));
     private readonly Image<Rgb24> _preprocImg;
     private readonly Image<RgbaVector> _preprocImgRgbaVector;
 

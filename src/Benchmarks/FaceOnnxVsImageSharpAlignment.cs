@@ -12,7 +12,7 @@ namespace Benchmarks;
 [MemoryDiagnoser]
 public class FaceOnnxVsImageSharpAlignment
 {
-    private readonly Image _img = Image.Load(@"C:\Users\georg\OneDrive\Bilder\20160111-0162_GJ.jpg");
+    private readonly Image _img = Image.Load(Regression.BenchmarkData.TestDataPath("jpgs", "biden_7mpx.jpg"));
     private readonly float[][,] _asFloat;
     private readonly Rectangle _rect = new(50, 99, 120, 240);
     private readonly System.Drawing.Rectangle _drawingRect = new(50, 99, 120, 240);

@@ -15,7 +15,7 @@ namespace Benchmarks;
 public class ImageCloneVsMutate
 {
     // private readonly Image<Rgb24> _img = Image.Load<Rgb24>(@"TestData/jpgs/biden_7mpx.jpg");
-    private readonly Image<Rgb24> _img = Image.Load<Rgb24>(@"TestData/jpgs/group_10mpx.jpg");
+    private readonly Image<Rgb24> _img = Image.Load<Rgb24>(Regression.BenchmarkData.TestDataPath("jpgs", "group_10mpx.jpg"));
     private readonly IFaceDetectorWithLandmarks _det;
     private readonly IReadOnlyCollection<FaceDetectorResult> _detectorResults;
     private readonly FaceDetectorResult _firstDetectorResult;
