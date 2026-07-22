@@ -13,6 +13,13 @@ public class ImageSharp
     private readonly Image _img = Image.Load(Regression.BenchmarkData.TestDataPath("jpgs", "biden_7mpx.jpg"));
     private readonly Image<RgbaVector> _imgV = Image.Load<RgbaVector>(Regression.BenchmarkData.TestDataPath("jpgs", "biden_7mpx.jpg"));
 
+    [GlobalCleanup]
+    public void Cleanup()
+    {
+        _img.Dispose();
+        _imgV.Dispose();
+    }
+
     [Benchmark]
     public void Parallel() => _img.ToFaceOnnxFloatArrayParallel();
 

@@ -28,6 +28,14 @@ public class ImageCloneVsMutate
         _firstDetectorResult = _detectorResults.First();
     }
 
+    [GlobalCleanup]
+    public void Cleanup()
+    {
+        _iterationImg?.Dispose();
+        _img.Dispose();
+        (_det as IDisposable)?.Dispose();
+    }
+
     [Benchmark]
     public void Cloning()
     {

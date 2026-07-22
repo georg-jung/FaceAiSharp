@@ -14,6 +14,9 @@ public class CropFirstVsResizeFirst
     private readonly Image _img = Image.Load(Regression.BenchmarkData.TestDataPath("jpgs", "biden_7mpx.jpg"));
     private readonly Rectangle _crop = new(20, 50, 1000, 2000);
 
+    [GlobalCleanup]
+    public void Cleanup() => _img.Dispose();
+
     public static Image ResizeFirst(Image sourceImage, Rectangle sourceArea, int extractedMaxEdgeSize)
         => sourceImage.Clone(op =>
         {

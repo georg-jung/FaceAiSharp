@@ -70,6 +70,10 @@ jobs:
         run: |
           shopt -s nullglob
           files=(./BenchmarkDotNet.Artifacts/results/*-report-full-compressed.json)
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "::error::No BenchmarkDotNet reports were produced. The --filter/--anyCategories selection probably matched no benchmarks."
+            exit 1
+          fi
           echo "Combining ${#files[@]} report(s)"
           jq -s '.[0].Benchmarks = ([.[].Benchmarks] | add) | .[0]' "${files[@]}" > combined-benchmark-report.json
       - uses: actions/upload-artifact@v7

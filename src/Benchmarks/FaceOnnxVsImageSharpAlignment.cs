@@ -23,6 +23,9 @@ public class FaceOnnxVsImageSharpAlignment
         _asFloat = _img.ToFaceOnnxFloatArrayParallel();
     }
 
+    [GlobalCleanup]
+    public void Cleanup() => _img.Dispose();
+
     public static Image Align(Image sourceImage, Rectangle faceArea, float angle)
         => sourceImage.Clone(op =>
             {
