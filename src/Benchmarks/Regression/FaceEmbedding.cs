@@ -30,8 +30,15 @@ public class FaceEmbedding
         });
 
         _portrait = BenchmarkData.LoadImage("Barack_Obama_03.jpg");
-        var face = _detector.DetectFaces(_portrait).MaxBy(x => x.Confidence);
-        _landmarks = face.Landmarks!;
+        var faces = _detector.DetectFaces(_portrait);
+        if (faces.Count == 0)
+        {
+            throw new InvalidOperationException("Benchmark setup failed: no face was detected in Barack_Obama_03.jpg.");
+        }
+
+        var face = faces.MaxBy(x => x.Confidence);
+        _landmarks = face.Landmarks
+            ?? throw new InvalidOperationException("Benchmark setup failed: the detected face has no landmarks.");
 
         _aligned = _portrait.Clone();
         ArcFaceEmbeddingsGenerator.AlignFaceUsingLandmarks(_aligned, _landmarks);

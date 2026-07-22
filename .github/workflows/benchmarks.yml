@@ -60,7 +60,7 @@ jobs:
         run: |
           CATEGORIES="${{ github.event_name == 'push' && 'regression' || inputs.categories }}"
           FILTER="${{ github.event_name == 'push' && '*' || inputs.filter }}"
-          BDN_JOB="${{ github.event_name == 'push' && 'default' || inputs.bdn-job }}"
+          BDN_JOB="${{ github.event_name == 'push' && 'default' || inputs['bdn-job'] }}"
           dotnet run --project src/Benchmarks -c Release -f net10.0 -- \
             --filter "${FILTER:-*}" \
             ${CATEGORIES:+--anyCategories $CATEGORIES} \

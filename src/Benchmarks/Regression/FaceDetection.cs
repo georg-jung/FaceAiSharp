@@ -17,6 +17,7 @@ public class FaceDetection
     private ScrfdDetector _detector = null!;
     private Image<Rgb24> _groupPhoto = null!;
     private Image<Rgb24> _preprocessed640 = null!;
+    private IDisposable? _preprocessed640Disposable;
     private DenseTensor<float> _tensor640 = null!;
 
     [GlobalSetup]
@@ -29,7 +30,10 @@ public class FaceDetection
 
         _groupPhoto = BenchmarkData.LoadImage("obama_family.jpg");
 
-        var (img, _) = _groupPhoto.EnsureProperlySized<Rgb24>(
+        /* EnsureProperlySized returns the original instance (and no disposable) if the image
+         * already has the requested dimensions, so dispose the returned disposable instead of
+         * the image to avoid a double dispose of _groupPhoto. */
+        var (img, disposable) = _groupPhoto.EnsureProperlySized<Rgb24>(
             new ResizeOptions
             {
                 Size = new Size(640),
@@ -39,6 +43,7 @@ public class FaceDetection
             },
             false);
         _preprocessed640 = img;
+        _preprocessed640Disposable = disposable;
         _tensor640 = ScrfdDetector.CreateImageTensor(img);
     }
 
@@ -46,8 +51,8 @@ public class FaceDetection
     public void Cleanup()
     {
         _detector.Dispose();
+        _preprocessed640Disposable?.Dispose();
         _groupPhoto.Dispose();
-        _preprocessed640.Dispose();
     }
 
     /// <summary>
