@@ -36,11 +36,11 @@ jobs:
     - uses: dotnet/nbgv@v0.5
       id: nbgv
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
+      uses: github/codeql-action/init@v4.37.4
       with:
         languages: csharp
     - run: dotnet restore
     - run: dotnet build -c Release --no-restore
     - run: dotnet pack -c Release --no-restore
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
+      uses: github/codeql-action/analyze@v4.37.4
