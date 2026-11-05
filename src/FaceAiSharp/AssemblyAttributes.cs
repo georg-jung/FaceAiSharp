@@ -3,6 +3,6 @@
 
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("Benchmarks")]
+[assembly: InternalsVisibleTo("FaceAiSharp.Benchmarks")]
 [assembly: InternalsVisibleTo("FaceAiSharp.Tests")]
 [assembly: InternalsVisibleTo("FaceAiSharp.Validation")]
