@@ -7,6 +7,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <!-- Not published to NuGet. -->
+    <IsPackable>false</IsPackable>
     <PackageId>FaceAiSharp.FaceONNX</PackageId>
     <RootNamespace>FaceAiSharp</RootNamespace>
     <AssemblyName>FaceAiSharp.FaceONNX</AssemblyName>
