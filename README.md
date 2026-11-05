@@ -1,4 +1,4 @@
-# FaceAiSharp
+# ![FaceAiSharp logo](https://raw.githubusercontent.com/georg-jung/FaceAiSharp/master/assets/icon.svg) FaceAiSharp
 
 [![Nuget](https://img.shields.io/nuget/v/FaceAiSharp?label=FaceAiSharp&logo=nuget)](https://www.nuget.org/packages/FaceAiSharp/)
 [![Nuget](https://img.shields.io/nuget/v/FaceAiSharp.Bundle?label=FaceAiSharp.Bundle&logo=nuget)](https://www.nuget.org/packages/FaceAiSharp.Bundle/)

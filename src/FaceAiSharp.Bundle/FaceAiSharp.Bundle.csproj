@@ -13,6 +13,7 @@
     <Authors>Georg Jung</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
 
     <PackageTags>face;face-detection;face-recognition;scrfd;arcface;onnx;onnxruntime;ai;artificial-intelligence;ml;machine-learning;openvino;insightface;facial-landmarks-detection;eye-state-detection;eyes;lfw;widerface;face-ai;bundle</PackageTags>
     <PackageProjectUrl>https://github.com/georg-jung/FaceAiSharp</PackageProjectUrl>
@@ -25,6 +26,7 @@ This is a bundle package that installs FaceAiSharp's managed code and multiple A
 
   <ItemGroup>
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\assets\icon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>
