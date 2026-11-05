@@ -31,6 +31,14 @@
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
   </PropertyGroup>
 
+  <!--
+    SixLabors.ImageSharp 3.2.0+ validates a Six Labors license at build time in projects that reference it directly.
+    sixlabors.lic is an assembly-scoped community license; see https://docs.sixlabors.com/articles/imagesharp/index.html#how-to-use-the-license-file
+  -->
+  <PropertyGroup>
+    <SixLaborsLicenseFile>$(MSBuildThisFileDirectory)sixlabors.lic</SixLaborsLicenseFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)stylecop.json" Link="stylecop.json" />
   </ItemGroup>
