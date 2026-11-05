@@ -1,6 +1,7 @@
 // Copyright (c) Georg Jung. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Text.Json;
 using Shouldly;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -21,6 +22,72 @@ public class ScrfdDetectorTests : IClassFixture<ScrfdDetectorFixture>
     {
         using var blankImg = new Image<Rgb24>(640, 640, new Rgb24(255, 255, 255));
         _det.DetectFaces(blankImg).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void BlankImageNoLandmarks()
+    {
+        using var blankImg = new Image<Rgb24>(640, 640, new Rgb24(255, 255, 255));
+        IFaceLandmarksDetector det = _det;
+        det.DetectLandmarks(blankImg).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task LandmarksOfMostConfidentFace()
+    {
+        using var img = await Image.LoadAsync<Rgb24>("TestData/jpgs/obama_family.jpg");
+        IFaceLandmarksDetector det = _det;
+        var expected = _det.DetectFaces(img).MaxBy(x => x.Confidence).Landmarks;
+
+        var landmarks = det.DetectLandmarks(img);
+
+        landmarks.Count.ShouldBe(5);
+        landmarks.ShouldBe(expected);
+        det.GetLeftEyeCenter(landmarks).ShouldBe(landmarks[0]);
+        det.GetRightEyeCenter(landmarks).ShouldBe(landmarks[1]);
+    }
+
+    [Fact]
+    public void EyeCentersOfEmptyLandmarksThrow()
+    {
+        IFaceLandmarksDetector det = _det;
+
+        // Should.Throw<ArgumentException> would also accept the indexer's ArgumentOutOfRangeException, so check the exact type.
+        var left = Should.Throw<ArgumentException>(() => det.GetLeftEyeCenter([]));
+        left.ShouldBeOfType<ArgumentException>();
+        left.ParamName.ShouldBe("landmarks");
+
+        var right = Should.Throw<ArgumentException>(() => det.GetRightEyeCenter([]));
+        right.ShouldBeOfType<ArgumentException>();
+        right.ParamName.ShouldBe("landmarks");
+    }
+
+    [Fact]
+    public void MisspelledNonMaxSuppressionAliasForwards()
+    {
+#pragma warning disable CS0618 // Type or member is obsolete
+        var opts = new ScrfdDetectorOptions { NonMaxSupressionThreshold = 0.25f };
+        opts.NonMaxSuppressionThreshold.ShouldBe(0.25f);
+        opts.NonMaxSuppressionThreshold = 0.3f;
+        opts.NonMaxSupressionThreshold.ShouldBe(0.3f);
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        var json = JsonSerializer.Serialize(opts);
+        json.ShouldContain("\"NonMaxSuppressionThreshold\"");
+        json.ShouldNotContain("NonMaxSupressionThreshold");
+    }
+
+    [Fact]
+    public void MisspelledNonMaxSuppressionNameIsReadFromLegacyJson()
+    {
+        var legacy = JsonSerializer.Deserialize<ScrfdDetectorOptions>("""{"NonMaxSupressionThreshold":0.1}""")!;
+        legacy.NonMaxSuppressionThreshold.ShouldBe(0.1f);
+
+        var current = JsonSerializer.Deserialize<ScrfdDetectorOptions>("""{"NonMaxSuppressionThreshold":0.2}""")!;
+        current.NonMaxSuppressionThreshold.ShouldBe(0.2f);
+
+        var roundTripped = JsonSerializer.Deserialize<ScrfdDetectorOptions>(JsonSerializer.Serialize(current))!;
+        roundTripped.NonMaxSuppressionThreshold.ShouldBe(0.2f);
     }
 
     [Fact]

@@ -129,7 +129,7 @@ See also: <https://github.com/georg-jung/FaceAiSharp.Models>
 
 ## License
 
-FaceAiSharp is released under the MIT License - see the [LICENSE](LICENSE) file for details. The pretrained ONNX models used by FaceAiSharp are subject to their respective licenses. Please refer to the license terms provided by the original creators of the pretrained models for more information. These licenses may be more restrictive than the MIT license. The fact that MIT License is specified in the repository does not mean that the models or other third-party works are made available under the license.
+FaceAiSharp is released under the MIT License - see the [LICENSE](https://github.com/georg-jung/FaceAiSharp/blob/master/LICENSE) file for details. The pretrained ONNX models used by FaceAiSharp are subject to their respective licenses. Please refer to the license terms provided by the original creators of the pretrained models for more information. These licenses may be more restrictive than the MIT license. The fact that MIT License is specified in the repository does not mean that the models or other third-party works are made available under the license.
 
 ## Contributing
 

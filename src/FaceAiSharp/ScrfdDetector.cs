@@ -1,8 +1,10 @@
 // Copyright (c) Georg Jung. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.ComponentModel;
 using System.Numerics.Tensors;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
 using FaceAiSharp.Extensions;
 using FaceAiSharp.Simd;
 using Microsoft.ML.OnnxRuntime;
@@ -89,21 +91,35 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
         return Detect(input, img.Size, scale);
     }
 
+    /// <inheritdoc/>
+    /// <exception cref="NotSupportedException">The SCRFD model used doesn't output facial landmarks ("kps").</exception>
     IReadOnlyList<PointF> IFaceLandmarksDetector.DetectLandmarks(Image<Rgb24> image)
     {
+        if (!_modelParameters.SupportsKps)
+        {
+            throw new NotSupportedException("The model used does not support facial landmarks.");
+        }
+
         var faces = DetectFaces(image);
         if (faces.Count == 0)
         {
-            throw new ArgumentException("No faces could be found in the given image.", nameof(image));
+            return [];
         }
 
-        var best = faces.MaxBy(x => x.Confidence);
-        return best.Landmarks ?? throw new NotSupportedException("The model used does not support facial landmarks.");
+        return faces.MaxBy(x => x.Confidence).Landmarks!;
     }
 
-    PointF IFaceLandmarksDetector.GetLeftEyeCenter(IReadOnlyList<PointF> landmarks) => GetLeftEye(landmarks);
+    PointF IFaceLandmarksDetector.GetLeftEyeCenter(IReadOnlyList<PointF> landmarks)
+    {
+        EnsureEyeLandmarks(landmarks);
+        return GetLeftEye(landmarks);
+    }
 
-    PointF IFaceLandmarksDetector.GetRightEyeCenter(IReadOnlyList<PointF> landmarks) => GetRightEye(landmarks);
+    PointF IFaceLandmarksDetector.GetRightEyeCenter(IReadOnlyList<PointF> landmarks)
+    {
+        EnsureEyeLandmarks(landmarks);
+        return GetRightEye(landmarks);
+    }
 
     public void Dispose() => _session.Dispose();
 
@@ -203,6 +219,15 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
         var x = (anchorIdx % anchorsPerRow) / numAnchors;
 
         return (x * stride, y * stride);
+    }
+
+    private static void EnsureEyeLandmarks(IReadOnlyList<PointF> landmarks)
+    {
+        ArgumentNullException.ThrowIfNull(landmarks);
+        if (landmarks.Count < 2)
+        {
+            throw new ArgumentException($"Expected landmarks as returned by {nameof(IFaceLandmarksDetector.DetectLandmarks)}, but got {landmarks.Count} point(s). {nameof(IFaceLandmarksDetector.DetectLandmarks)} returns an empty list if no face was found.", nameof(landmarks));
+        }
     }
 
     /// <summary>
@@ -330,12 +355,17 @@ public record ScrfdDetectorOptions
     /// </summary>
     public bool AutoResizeInputToModelDimensions { get; set; } = true;
 
+    /// <summary>
+    /// Gets or sets the IoU threshold for non max suppression. Detections that overlap a more confident detection by more than this are discarded.
+    /// </summary>
     public float NonMaxSuppressionThreshold { get; set; } = 0.4f;
 
     /// <summary>
     /// Gets or sets the non max suppression threshold. This is a misspelled alias for <see cref="NonMaxSuppressionThreshold"/>.
     /// </summary>
     [Obsolete($"Use {nameof(NonMaxSuppressionThreshold)} instead.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [JsonIgnore]
     public float NonMaxSupressionThreshold
     {
         get => NonMaxSuppressionThreshold;
@@ -345,4 +375,12 @@ public record ScrfdDetectorOptions
     public float ConfidenceThreshold { get; set; } = 0.5f;
 
     public Size? MaximumInputSize { get; set; } = new(640, 640);
+
+    /* Write-only: reads the misspelled name from JSON written by FaceAiSharp <= 0.6, but never writes it. */
+    [JsonInclude]
+    [JsonPropertyName("NonMaxSupressionThreshold")]
+    private float LegacyNonMaxSupressionThreshold
+    {
+        set => NonMaxSuppressionThreshold = value;
+    }
 }
