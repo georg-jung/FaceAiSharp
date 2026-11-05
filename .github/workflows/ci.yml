@@ -63,15 +63,11 @@ jobs:
     - name: Publish coverage in build summary # Only applicable if 'MarkdownSummaryGithub' or one of the other Markdown report types is generated
       run: cat coveragereport/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
       shell: bash
-    - name: Check for Codecov token
-      id: codecov
-      # step-level env isn't visible in the same step's `if`, and secrets can't be used in `if` directly
-      run: echo "enabled=${{ secrets.CODECOV_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
     - name: Upload coverage reports to Codecov
-      if: steps.codecov.outputs.enabled == 'true'
+      if: ${{ env.CODECOV_TOKEN }}
       uses: codecov/codecov-action@v7
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         slug: georg-jung/FaceAiSharp
     - run: dotnet pack -c Release --no-restore --no-build /p:ContinuousIntegrationBuild=true
     
