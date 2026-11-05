@@ -27,12 +27,12 @@ jobs:
       packages: write
     timeout-minutes: 15
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
         lfs: true
     - name: Setup dotnet
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@v6
       with:
         dotnet-version: |
           8.x
@@ -66,11 +66,15 @@ jobs:
       run: cat coveragereport/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
       shell: bash
     - name: Upload coverage reports to Codecov
+      # Skipped where the secret isn't available (forks, Dependabot-triggered runs);
+      # where it is, a failed upload fails the build instead of passing silently.
       if: ${{ env.CODECOV_TOKEN }}
-      uses: codecov/codecov-action@v6
+      uses: codecov/codecov-action@v7
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      with:
         slug: georg-jung/FaceAiSharp
+        fail_ci_if_error: true
     - run: dotnet pack -c Release --no-restore --no-build /p:ContinuousIntegrationBuild=true
     
     - uses: actions/upload-artifact@v7
