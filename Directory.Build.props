@@ -31,6 +31,17 @@
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
   </PropertyGroup>
 
+  <!--
+    SixLabors.ImageSharp 3.2.0+ validates a Six Labors license at build time in every project that references it directly.
+    Put the issued license file at the repository root as sixlabors.lic (an assembly-scoped community key may be committed),
+    or provide the complete license string via the SIXLABORS_LICENSE_KEY environment variable, e.g. from a CI secret.
+    See https://docs.sixlabors.com/articles/imagesharp/index.html#how-to-use-the-license-file
+  -->
+  <PropertyGroup>
+    <SixLaborsLicenseFile Condition=" '$(SixLaborsLicenseFile)' == '' and Exists('$(MSBuildThisFileDirectory)sixlabors.lic') ">$(MSBuildThisFileDirectory)sixlabors.lic</SixLaborsLicenseFile>
+    <SixLaborsLicenseKey Condition=" '$(SixLaborsLicenseKey)' == '' and '$(SIXLABORS_LICENSE_KEY)' != '' ">$(SIXLABORS_LICENSE_KEY)</SixLaborsLicenseKey>
+  </PropertyGroup>
+
   <ItemGroup>
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)stylecop.json" Link="stylecop.json" />
   </ItemGroup>

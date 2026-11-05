@@ -134,3 +134,7 @@ FaceAiSharp is released under the MIT License - see the [LICENSE](LICENSE) file 
 ## Contributing
 
 Contributions to FaceAiSharp are always welcome! If you find a bug, have a feature request, or want to contribute code or documentation improvements, please open an issue or submit a pull request.
+
+### Building from source
+
+FaceAiSharp references [SixLabors.ImageSharp](https://github.com/SixLabors/ImageSharp) directly. Since ImageSharp 3.2.0, every project that references it directly needs a Six Labors license at build time. Place the license file at the repository root as `sixlabors.lic`, or set the `SIXLABORS_LICENSE_KEY` environment variable to the complete license string. Applications that consume the FaceAiSharp NuGet packages get ImageSharp transitively and do not need a key for that. See the [ImageSharp documentation](https://docs.sixlabors.com/articles/imagesharp/index.html#how-to-use-the-license-file) for details.
