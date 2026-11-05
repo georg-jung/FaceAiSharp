@@ -32,14 +32,11 @@
   </PropertyGroup>
 
   <!--
-    SixLabors.ImageSharp 3.2.0+ validates a Six Labors license at build time in every project that references it directly.
-    Put the issued license file at the repository root as sixlabors.lic (an assembly-scoped community key may be committed),
-    or provide the complete license string via the SIXLABORS_LICENSE_KEY environment variable, e.g. from a CI secret.
-    See https://docs.sixlabors.com/articles/imagesharp/index.html#how-to-use-the-license-file
+    SixLabors.ImageSharp 3.2.0+ validates a Six Labors license at build time in projects that reference it directly.
+    sixlabors.lic is an assembly-scoped community license; see https://docs.sixlabors.com/articles/imagesharp/index.html#how-to-use-the-license-file
   -->
   <PropertyGroup>
-    <SixLaborsLicenseFile Condition=" '$(SixLaborsLicenseFile)' == '' and Exists('$(MSBuildThisFileDirectory)sixlabors.lic') ">$(MSBuildThisFileDirectory)sixlabors.lic</SixLaborsLicenseFile>
-    <SixLaborsLicenseKey Condition=" '$(SixLaborsLicenseKey)' == '' and '$(SIXLABORS_LICENSE_KEY)' != '' ">$(SIXLABORS_LICENSE_KEY)</SixLaborsLicenseKey>
+    <SixLaborsLicenseFile>$(MSBuildThisFileDirectory)sixlabors.lic</SixLaborsLicenseFile>
   </PropertyGroup>
 
   <ItemGroup>

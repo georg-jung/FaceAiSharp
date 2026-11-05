@@ -13,8 +13,6 @@ env:
   DOTNET_NOLOGO: true
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_GENERATE_ASPNET_CERTIFICATE: false
-  # Six Labors license for SixLabors.ImageSharp >= 3.2.0; not needed when sixlabors.lic is committed at the repository root.
-  SIXLABORS_LICENSE_KEY: ${{ secrets.SIXLABORS_LICENSE_KEY }}
 
 jobs:
   build:
