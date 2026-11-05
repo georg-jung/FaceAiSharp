@@ -51,8 +51,15 @@ public class ScrfdDetectorTests : IClassFixture<ScrfdDetectorFixture>
     public void EyeCentersOfEmptyLandmarksThrow()
     {
         IFaceLandmarksDetector det = _det;
-        Should.Throw<ArgumentException>(() => det.GetLeftEyeCenter([]));
-        Should.Throw<ArgumentException>(() => det.GetRightEyeCenter([]));
+
+        // Should.Throw<ArgumentException> would also accept the indexer's ArgumentOutOfRangeException, so check the exact type.
+        var left = Should.Throw<ArgumentException>(() => det.GetLeftEyeCenter([]));
+        left.ShouldBeOfType<ArgumentException>();
+        left.ParamName.ShouldBe("landmarks");
+
+        var right = Should.Throw<ArgumentException>(() => det.GetRightEyeCenter([]));
+        right.ShouldBeOfType<ArgumentException>();
+        right.ParamName.ShouldBe("landmarks");
     }
 
     [Fact]
@@ -68,6 +75,19 @@ public class ScrfdDetectorTests : IClassFixture<ScrfdDetectorFixture>
         var json = JsonSerializer.Serialize(opts);
         json.ShouldContain("\"NonMaxSuppressionThreshold\"");
         json.ShouldNotContain("NonMaxSupressionThreshold");
+    }
+
+    [Fact]
+    public void MisspelledNonMaxSuppressionNameIsReadFromLegacyJson()
+    {
+        var legacy = JsonSerializer.Deserialize<ScrfdDetectorOptions>("""{"NonMaxSupressionThreshold":0.1}""")!;
+        legacy.NonMaxSuppressionThreshold.ShouldBe(0.1f);
+
+        var current = JsonSerializer.Deserialize<ScrfdDetectorOptions>("""{"NonMaxSuppressionThreshold":0.2}""")!;
+        current.NonMaxSuppressionThreshold.ShouldBe(0.2f);
+
+        var roundTripped = JsonSerializer.Deserialize<ScrfdDetectorOptions>(JsonSerializer.Serialize(current))!;
+        roundTripped.NonMaxSuppressionThreshold.ShouldBe(0.2f);
     }
 
     [Fact]

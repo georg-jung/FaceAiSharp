@@ -91,16 +91,22 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
         return Detect(input, img.Size, scale);
     }
 
+    /// <inheritdoc/>
+    /// <exception cref="NotSupportedException">The SCRFD model used doesn't output facial landmarks ("kps").</exception>
     IReadOnlyList<PointF> IFaceLandmarksDetector.DetectLandmarks(Image<Rgb24> image)
     {
+        if (!_modelParameters.SupportsKps)
+        {
+            throw new NotSupportedException("The model used does not support facial landmarks.");
+        }
+
         var faces = DetectFaces(image);
         if (faces.Count == 0)
         {
             return [];
         }
 
-        var best = faces.MaxBy(x => x.Confidence);
-        return best.Landmarks ?? throw new NotSupportedException("The model used does not support facial landmarks.");
+        return faces.MaxBy(x => x.Confidence).Landmarks!;
     }
 
     PointF IFaceLandmarksDetector.GetLeftEyeCenter(IReadOnlyList<PointF> landmarks)
@@ -349,6 +355,9 @@ public record ScrfdDetectorOptions
     /// </summary>
     public bool AutoResizeInputToModelDimensions { get; set; } = true;
 
+    /// <summary>
+    /// Gets or sets the IoU threshold for non max suppression. Detections that overlap a more confident detection by more than this are discarded.
+    /// </summary>
     public float NonMaxSuppressionThreshold { get; set; } = 0.4f;
 
     /// <summary>
@@ -366,4 +375,12 @@ public record ScrfdDetectorOptions
     public float ConfidenceThreshold { get; set; } = 0.5f;
 
     public Size? MaximumInputSize { get; set; } = new(640, 640);
+
+    /* Write-only: reads the misspelled name from JSON written by FaceAiSharp <= 0.6, but never writes it. */
+    [JsonInclude]
+    [JsonPropertyName("NonMaxSupressionThreshold")]
+    private float LegacyNonMaxSupressionThreshold
+    {
+        set => NonMaxSuppressionThreshold = value;
+    }
 }
