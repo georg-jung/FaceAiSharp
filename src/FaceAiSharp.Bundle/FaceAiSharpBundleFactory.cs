@@ -32,7 +32,12 @@ public static class FaceAiSharpBundleFactory
         return new OpenVinoOpenClosedEye0001(opt, sessionOptions);
     }
 
-    /* AppContext.BaseDirectory works in single-file and self-contained deployments too,
-     * where Assembly.Location returns an empty string. */
-    private static string GetExeDir() => AppContext.BaseDirectory;
+    /* The onnx folder is deployed next to this assembly. Prefer its location, so hosts that load FaceAiSharp.Bundle
+     * from a directory other than the app base (plugins, PowerShell modules, ...) keep working. Assembly.Location is
+     * empty in single-file deployments; fall back to AppContext.BaseDirectory there. */
+    private static string GetExeDir()
+    {
+        var location = typeof(FaceAiSharpBundleFactory).Assembly.Location;
+        return string.IsNullOrEmpty(location) ? AppContext.BaseDirectory : Path.GetDirectoryName(location)!;
+    }
 }

@@ -197,9 +197,9 @@ public sealed class ArcFaceEmbeddingsGenerator : IFaceEmbeddingsGenerator, IDisp
         using var outputs = _session.Run(inputs);
         var firstOut = outputs.First();
         var tens = firstOut.Value as DenseTensor<float> ?? firstOut.AsTensor<float>().ToDenseTensor();
-        if (tens.Length % 512 != 0)
+        if (tens.Length == 0)
         {
-            throw new InvalidOperationException($"The output tensor has an invalid length of {tens.Length}. A multiple of 512 was expected. The model used is probably not supported.");
+            throw new InvalidOperationException("The model returned an empty output tensor. The model used is probably not supported.");
         }
 
         var embSpan = tens.Buffer.Span;
