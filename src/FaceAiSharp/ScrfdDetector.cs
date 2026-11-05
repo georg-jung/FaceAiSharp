@@ -1,8 +1,10 @@
 // Copyright (c) Georg Jung. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.ComponentModel;
 using System.Numerics.Tensors;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
 using FaceAiSharp.Extensions;
 using FaceAiSharp.Simd;
 using Microsoft.ML.OnnxRuntime;
@@ -94,16 +96,24 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
         var faces = DetectFaces(image);
         if (faces.Count == 0)
         {
-            throw new ArgumentException("No faces could be found in the given image.", nameof(image));
+            return [];
         }
 
         var best = faces.MaxBy(x => x.Confidence);
         return best.Landmarks ?? throw new NotSupportedException("The model used does not support facial landmarks.");
     }
 
-    PointF IFaceLandmarksDetector.GetLeftEyeCenter(IReadOnlyList<PointF> landmarks) => GetLeftEye(landmarks);
+    PointF IFaceLandmarksDetector.GetLeftEyeCenter(IReadOnlyList<PointF> landmarks)
+    {
+        EnsureEyeLandmarks(landmarks);
+        return GetLeftEye(landmarks);
+    }
 
-    PointF IFaceLandmarksDetector.GetRightEyeCenter(IReadOnlyList<PointF> landmarks) => GetRightEye(landmarks);
+    PointF IFaceLandmarksDetector.GetRightEyeCenter(IReadOnlyList<PointF> landmarks)
+    {
+        EnsureEyeLandmarks(landmarks);
+        return GetRightEye(landmarks);
+    }
 
     public void Dispose() => _session.Dispose();
 
@@ -203,6 +213,15 @@ public sealed class ScrfdDetector : IFaceDetectorWithLandmarks, IDisposable
         var x = (anchorIdx % anchorsPerRow) / numAnchors;
 
         return (x * stride, y * stride);
+    }
+
+    private static void EnsureEyeLandmarks(IReadOnlyList<PointF> landmarks)
+    {
+        ArgumentNullException.ThrowIfNull(landmarks);
+        if (landmarks.Count < 2)
+        {
+            throw new ArgumentException($"Expected landmarks as returned by {nameof(IFaceLandmarksDetector.DetectLandmarks)}, but got {landmarks.Count} point(s). {nameof(IFaceLandmarksDetector.DetectLandmarks)} returns an empty list if no face was found.", nameof(landmarks));
+        }
     }
 
     /// <summary>
@@ -336,6 +355,8 @@ public record ScrfdDetectorOptions
     /// Gets or sets the non max suppression threshold. This is a misspelled alias for <see cref="NonMaxSuppressionThreshold"/>.
     /// </summary>
     [Obsolete($"Use {nameof(NonMaxSuppressionThreshold)} instead.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [JsonIgnore]
     public float NonMaxSupressionThreshold
     {
         get => NonMaxSuppressionThreshold;

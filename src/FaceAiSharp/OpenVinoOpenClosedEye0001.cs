@@ -63,9 +63,9 @@ public sealed class OpenVinoOpenClosedEye0001 : IEyeStateDetector, IDisposable
         using var outputs = _session.Run(inputs);
         var firstOut = outputs.First();
         var tens = firstOut.Value as DenseTensor<float> ?? firstOut.AsTensor<float>().ToDenseTensor();
-        if (tens.Length % 2 != 0)
+        if (tens.Length < 2)
         {
-            throw new InvalidOperationException($"The output tensor has an invalid length of {tens.Length}. A multiple of 2 was expected. The model used is probably not supported.");
+            throw new InvalidOperationException($"The output tensor has an invalid length of {tens.Length}. At least 2 values were expected. The model used is probably not supported.");
         }
 
         var span = tens.Buffer.Span;

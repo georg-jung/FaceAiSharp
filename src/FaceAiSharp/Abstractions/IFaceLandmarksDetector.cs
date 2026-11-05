@@ -12,7 +12,7 @@ public interface IFaceLandmarksDetector
     /// Extract facial landmark points from a properly cropped image of a face. The amount and meaning of the points depends on the model used for implementation.
     /// </summary>
     /// <param name="image">Cropped image of a face.</param>
-    /// <returns>Facial landmark coordiantes.</returns>
+    /// <returns>Facial landmark coordinates, or an empty list if no face could be detected in the image.</returns>
     IReadOnlyList<PointF> DetectLandmarks(Image<Rgb24> image);
 
     /// <summary>
@@ -20,6 +20,7 @@ public interface IFaceLandmarksDetector
     /// </summary>
     /// <param name="landmarks">Landmark points as returned by <see cref="DetectLandmarks(Image{Rgb24})"/>.</param>
     /// <returns>Center point of the left eye.</returns>
+    /// <exception cref="ArgumentException"><paramref name="landmarks"/> doesn't contain the expected landmark points, e.g. because it is the empty result of <see cref="DetectLandmarks(Image{Rgb24})"/> for an image without a face.</exception>
     PointF GetLeftEyeCenter(IReadOnlyList<PointF> landmarks);
 
     /// <summary>
@@ -27,5 +28,6 @@ public interface IFaceLandmarksDetector
     /// </summary>
     /// <param name="landmarks">Landmark points as returned by <see cref="DetectLandmarks(Image{Rgb24})"/>.</param>
     /// <returns>Center point of the right eye.</returns>
+    /// <exception cref="ArgumentException"><paramref name="landmarks"/> doesn't contain the expected landmark points, e.g. because it is the empty result of <see cref="DetectLandmarks(Image{Rgb24})"/> for an image without a face.</exception>
     PointF GetRightEyeCenter(IReadOnlyList<PointF> landmarks);
 }
